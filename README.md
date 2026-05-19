@@ -1,6 +1,6 @@
-# Tauri + React + Typescript
+# Open Audition
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Simple desktop audio editor focused on reliable theatrical sound editing workflows.
 
 ## Recommended IDE Setup
 

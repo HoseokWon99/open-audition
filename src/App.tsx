@@ -1,50 +1,170 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useMemo, useState } from "react";
 import "./App.css";
+import { clips as mockClips, mediaFiles, recentProjects, tracks as mockTracks } from "./data/mockData";
+import { HomePage } from "./pages/HomePage";
+import { MultitrackEditorPage } from "./pages/MultitrackEditorPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { WaveformEditorPage } from "./pages/WaveformEditorPage";
+import type { AppView, MediaTab, SettingsSection } from "./types";
+
+function viewFromHash(): AppView {
+  const hash = window.location.hash.replace("#", "");
+
+  if (hash === "multitrack" || hash === "waveform" || hash === "settings") {
+    return hash;
+  }
+
+  return "home";
+}
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [activeView, setActiveView] = useState<AppView>(viewFromHash);
+  const [previousEditorView, setPreviousEditorView] = useState<AppView>("multitrack");
+  const [selectedProjectId, setSelectedProjectId] = useState(recentProjects[0].id);
+  const [activeMediaTab, setActiveMediaTab] = useState<MediaTab>("files");
+  const [clips, setClips] = useState(mockClips);
+  const [selectedFileId, setSelectedFileId] = useState("session");
+  const [tracks, setTracks] = useState(mockTracks);
+  const [selectedTrackId, setSelectedTrackId] = useState("track-3");
+  const [selectedClipId, setSelectedClipId] = useState("clip-mola");
+  const [selectedSettingsSection, setSelectedSettingsSection] =
+    useState<SettingsSection>("device");
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  const selectedProject = useMemo(
+    () => recentProjects.find((project) => project.id === selectedProjectId) ?? recentProjects[0],
+    [selectedProjectId],
+  );
+
+  function navigate(view: AppView) {
+    window.location.hash = view === "home" ? "" : view;
+    setActiveView(view);
+  }
+
+  function openProject(projectId: string) {
+    setSelectedProjectId(projectId);
+    navigate("multitrack");
+    setPreviousEditorView("multitrack");
+  }
+
+  function openSettings() {
+    setPreviousEditorView(activeView === "waveform" ? "waveform" : "multitrack");
+    navigate("settings");
+  }
+
+  function openFile(fileId: string) {
+    const file = mediaFiles.find((candidate) => candidate.id === fileId);
+
+    setSelectedFileId(fileId);
+
+    if (file?.mediaType === "Multitrack") {
+      navigate("multitrack");
+      setPreviousEditorView("multitrack");
+      return;
+    }
+
+    navigate("waveform");
+    setPreviousEditorView("waveform");
+  }
+
+  function openClip(clipId: string) {
+    const clip = clips.find((candidate) => candidate.id === clipId);
+    setSelectedClipId(clipId);
+    if (clip) {
+      setSelectedFileId(clip.sourceFileId);
+    }
+    navigate("waveform");
+    setPreviousEditorView("waveform");
+  }
+
+  function updateTrackGain(trackId: string, gainDb: number) {
+    setTracks((currentTracks) =>
+      currentTracks.map((track) => (track.id === trackId ? { ...track, gainDb } : track)),
+    );
+  }
+
+  function updateTrackPan(trackId: string, pan: number) {
+    setTracks((currentTracks) =>
+      currentTracks.map((track) => (track.id === trackId ? { ...track, pan } : track)),
+    );
+  }
+
+  function updateClipTiming(clipId: string, startPercent: number, widthPercent: number) {
+    setClips((currentClips) =>
+      currentClips.map((clip) =>
+        clip.id === clipId
+          ? {
+              ...clip,
+              startPercent,
+              widthPercent,
+            }
+          : clip,
+      ),
+    );
+  }
+
+  if (activeView === "home") {
+    return (
+      <HomePage
+        onOpenProject={openProject}
+        onOpenSettings={openSettings}
+        onSelectProject={setSelectedProjectId}
+        projects={recentProjects}
+        selectedProjectId={selectedProjectId}
+      />
+    );
+  }
+
+  if (activeView === "settings") {
+    return (
+      <SettingsPage
+        onBackToEditor={() => navigate(previousEditorView)}
+        onSelectSection={setSelectedSettingsSection}
+        selectedSection={selectedSettingsSection}
+      />
+    );
+  }
+
+  if (activeView === "waveform") {
+    return (
+      <WaveformEditorPage
+        activeMediaTab={activeMediaTab}
+        clips={clips}
+        files={mediaFiles}
+        onGoHome={() => navigate("home")}
+        onOpenFile={openFile}
+        onOpenSettings={openSettings}
+        onSelectFile={setSelectedFileId}
+        onTabChange={setActiveMediaTab}
+        project={selectedProject}
+        selectedClipId={selectedClipId}
+        selectedFileId={selectedFileId}
+        tracks={tracks}
+      />
+    );
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    <MultitrackEditorPage
+      activeMediaTab={activeMediaTab}
+      clips={clips}
+      files={mediaFiles}
+      onChangeTrackGain={updateTrackGain}
+      onChangeTrackPan={updateTrackPan}
+      onChangeClipTiming={updateClipTiming}
+      onGoHome={() => navigate("home")}
+      onOpenClip={openClip}
+      onOpenFile={openFile}
+      onOpenSettings={openSettings}
+      onSelectClip={setSelectedClipId}
+      onSelectFile={setSelectedFileId}
+      onSelectTrack={setSelectedTrackId}
+      onTabChange={setActiveMediaTab}
+      project={selectedProject}
+      selectedClipId={selectedClipId}
+      selectedFileId={selectedFileId}
+      selectedTrackId={selectedTrackId}
+      tracks={tracks}
+    />
   );
 }
 
