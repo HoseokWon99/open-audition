@@ -4,6 +4,7 @@ import { TimelineRuler } from "./TimelineRuler";
 import { TrackHeader } from "./TrackHeader";
 import { ResizableHandle } from "./ResizableHandle";
 import type { Clip, Track } from "../../types";
+import { clamp } from "../../utils/math";
 
 interface MultitrackTimelineProps {
   clips: Clip[];
@@ -64,7 +65,7 @@ export function MultitrackTimeline({
       return playheadPercent;
     }
 
-    return Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    return clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
   }
 
   function movePlayheadToPointer(event: React.MouseEvent<HTMLElement>) {
@@ -107,18 +108,20 @@ export function MultitrackTimeline({
       const deltaPercent = percentFromPointer(moveEvent) - initialPointerPercent;
 
       if (edge === "start") {
-        const nextStartPercent = Math.max(
+        const nextStartPercent = clamp(
+          initialStartPercent + deltaPercent,
           0,
-          Math.min(initialStartPercent + deltaPercent, initialEndPercent - minWidthPercent),
+          initialEndPercent - minWidthPercent,
         );
 
         onChangeClipTiming(clip.id, nextStartPercent, initialEndPercent - nextStartPercent);
         return;
       }
 
-      const nextEndPercent = Math.min(
+      const nextEndPercent = clamp(
+        initialEndPercent + deltaPercent,
+        initialStartPercent + minWidthPercent,
         100,
-        Math.max(initialEndPercent + deltaPercent, initialStartPercent + minWidthPercent),
       );
 
       onChangeClipTiming(clip.id, initialStartPercent, nextEndPercent - initialStartPercent);
@@ -138,12 +141,12 @@ export function MultitrackTimeline({
 
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      onChangePlayhead(Math.max(0, playheadPercent - step));
+      onChangePlayhead(clamp(playheadPercent - step, 0, 100));
     }
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
-      onChangePlayhead(Math.min(100, playheadPercent + step));
+      onChangePlayhead(clamp(playheadPercent + step, 0, 100));
     }
   }
 
@@ -154,7 +157,7 @@ export function MultitrackTimeline({
       return visibleStartPercent;
     }
 
-    return Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    return clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
   }
 
   function startOverviewDrag(

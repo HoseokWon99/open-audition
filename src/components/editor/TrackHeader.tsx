@@ -1,5 +1,6 @@
 import type React from "react";
 import type { Track } from "../../types";
+import { clamp } from "../../utils/math";
 
 interface TrackHeaderProps {
   isSelected: boolean;
@@ -33,8 +34,8 @@ function valueFromPointer(
     degrees -= 360;
   }
 
-  const clamped = Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, degrees));
-  const ratio = (clamped - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
+  const clampedDegrees = clamp(degrees, MIN_ANGLE, MAX_ANGLE);
+  const ratio = (clampedDegrees - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
 
   return Math.round(min + ratio * (max - min));
 }

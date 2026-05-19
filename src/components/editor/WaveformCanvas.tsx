@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { TimelineRuler } from "./TimelineRuler";
+import { clamp } from "../../utils/math";
 
 const bars = Array.from({ length: 180 }, (_, index) => {
   const rise = Math.min(1, index / 40);
   const fall = index > 118 ? Math.max(0.18, 1 - (index - 118) / 72) : 1;
   const variance = 0.62 + Math.sin(index * 0.33) * 0.22 + Math.sin(index * 1.7) * 0.13;
-  return Math.max(0.08, Math.min(1, rise * fall * variance));
+  return clamp(rise * fall * variance, 0.08, 1);
 });
 
 export function WaveformCanvas() {
@@ -18,10 +19,6 @@ export function WaveformCanvas() {
   const [visibleStartPercent, setVisibleStartPercent] = useState(0);
   const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
   const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
-
-  function clamp(value: number, min: number, max: number) {
-    return Math.max(min, Math.min(max, value));
-  }
 
   function changeVisibleWindow(startPercent: number, widthPercent: number) {
     const nextWidthPercent = clamp(widthPercent, 10, 100);

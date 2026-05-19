@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import "./App.css";
 import { clips as mockClips, mediaFiles, recentProjects, tracks as mockTracks } from "./data/mockData";
+import { EditorPage } from "./pages/EditorPage";
 import { HomePage } from "./pages/HomePage";
-import { MultitrackEditorPage } from "./pages/MultitrackEditorPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { WaveformEditorPage } from "./pages/WaveformEditorPage";
 import type { AppView, MediaTab, SettingsSection } from "./types";
 
 function viewFromHash(): AppView {
@@ -124,48 +123,34 @@ function App() {
     );
   }
 
-  if (activeView === "waveform") {
+  if (activeView === "waveform" || activeView === "multitrack") {
     return (
-      <WaveformEditorPage
+      <EditorPage
         activeMediaTab={activeMediaTab}
         clips={clips}
+        editorView={activeView}
         files={mediaFiles}
+        onChangeClipTiming={updateClipTiming}
+        onChangeTrackGain={updateTrackGain}
+        onChangeTrackPan={updateTrackPan}
         onGoHome={() => navigate("home")}
+        onOpenClip={openClip}
         onOpenFile={openFile}
         onOpenSettings={openSettings}
+        onSelectClip={setSelectedClipId}
         onSelectFile={setSelectedFileId}
+        onSelectTrack={setSelectedTrackId}
         onTabChange={setActiveMediaTab}
         project={selectedProject}
         selectedClipId={selectedClipId}
         selectedFileId={selectedFileId}
+        selectedTrackId={selectedTrackId}
         tracks={tracks}
       />
     );
   }
 
-  return (
-    <MultitrackEditorPage
-      activeMediaTab={activeMediaTab}
-      clips={clips}
-      files={mediaFiles}
-      onChangeTrackGain={updateTrackGain}
-      onChangeTrackPan={updateTrackPan}
-      onChangeClipTiming={updateClipTiming}
-      onGoHome={() => navigate("home")}
-      onOpenClip={openClip}
-      onOpenFile={openFile}
-      onOpenSettings={openSettings}
-      onSelectClip={setSelectedClipId}
-      onSelectFile={setSelectedFileId}
-      onSelectTrack={setSelectedTrackId}
-      onTabChange={setActiveMediaTab}
-      project={selectedProject}
-      selectedClipId={selectedClipId}
-      selectedFileId={selectedFileId}
-      selectedTrackId={selectedTrackId}
-      tracks={tracks}
-    />
-  );
+  return null;
 }
 
 export default App;

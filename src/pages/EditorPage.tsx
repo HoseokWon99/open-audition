@@ -5,11 +5,14 @@ import { MultitrackTimeline } from "../components/editor/MultitrackTimeline";
 import { ResizableHandle } from "../components/editor/ResizableHandle";
 import { TopBar } from "../components/editor/TopBar";
 import { TransportBar } from "../components/editor/TransportBar";
+import { WaveformCanvas } from "../components/editor/WaveformCanvas";
 import type { Clip, MediaFile, MediaTab, ProjectSummary, Track } from "../types";
+import { clamp } from "../utils/math";
 
-interface MultitrackEditorPageProps {
+interface EditorPageProps {
   activeMediaTab: MediaTab;
   clips: Clip[];
+  editorView: "multitrack" | "waveform";
   files: MediaFile[];
   project: ProjectSummary;
   selectedClipId: string;
@@ -17,9 +20,9 @@ interface MultitrackEditorPageProps {
   selectedTrackId: string;
   tracks: Track[];
   onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
-  onGoHome: () => void;
   onChangeTrackGain: (trackId: string, gainDb: number) => void;
   onChangeTrackPan: (trackId: string, pan: number) => void;
+  onGoHome: () => void;
   onOpenClip: (clipId: string) => void;
   onOpenFile: (fileId: string) => void;
   onOpenSettings: () => void;
@@ -29,9 +32,10 @@ interface MultitrackEditorPageProps {
   onTabChange: (tab: MediaTab) => void;
 }
 
-export function MultitrackEditorPage({
+export function EditorPage({
   activeMediaTab,
   clips,
+  editorView,
   files,
   project,
   selectedClipId,
@@ -39,9 +43,9 @@ export function MultitrackEditorPage({
   selectedTrackId,
   tracks,
   onChangeClipTiming,
-  onGoHome,
   onChangeTrackGain,
   onChangeTrackPan,
+  onGoHome,
   onOpenClip,
   onOpenFile,
   onOpenSettings,
@@ -49,7 +53,7 @@ export function MultitrackEditorPage({
   onSelectFile,
   onSelectTrack,
   onTabChange,
-}: MultitrackEditorPageProps) {
+}: EditorPageProps) {
   const [leftDockWidth, setLeftDockWidth] = useState(318);
   const [inspectorHeight, setInspectorHeight] = useState(172);
   const [playheadSeconds, setPlayheadSeconds] = useState(73.091);
@@ -62,7 +66,7 @@ export function MultitrackEditorPage({
   const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
   const timelineDurationSeconds = 140;
   const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
-  const zoomLevel = Math.max(0, Math.min(5, Math.round((100 - visibleWidthPercent) / 15)));
+  const zoomLevel = clamp(Math.round((100 - visibleWidthPercent) / 15), 0, 5);
 
   const layoutStyle = {
     "--left-dock-width": `${leftDockWidth}px`,
@@ -70,10 +74,6 @@ export function MultitrackEditorPage({
     "--track-head-width": `${trackHeadWidth}px`,
     "--transport-height": `${transportHeight}px`,
   } as React.CSSProperties;
-
-  function clamp(value: number, min: number, max: number) {
-    return Math.max(min, Math.min(max, value));
-  }
 
   function formatTime(seconds: number) {
     const minutes = Math.floor(seconds / 60);
@@ -108,57 +108,61 @@ export function MultitrackEditorPage({
           }
         />
         <section className="oa-main">
-          <MultitrackTimeline
-            clips={clips}
-            durationSeconds={timelineDurationSeconds}
-            onChangePlayhead={(percent) =>
-              setPlayheadSeconds((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
-            }
-            onChangeClipTiming={onChangeClipTiming}
-            onChangeTrackGain={onChangeTrackGain}
-            onChangeTrackPan={onChangeTrackPan}
-            onOpenClip={onOpenClip}
-            onChangeVisibleWindow={(startPercent, widthPercent) => {
-              const nextWidthPercent = clamp(widthPercent, 10, 100);
-              const nextStartPercent = clamp(startPercent, 0, 100 - nextWidthPercent);
+          {editorView === "multitrack" ? (
+            <MultitrackTimeline
+              clips={clips}
+              durationSeconds={timelineDurationSeconds}
+              onChangePlayhead={(percent) =>
+                setPlayheadSeconds((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
+              }
+              onChangeClipTiming={onChangeClipTiming}
+              onChangeTrackGain={onChangeTrackGain}
+              onChangeTrackPan={onChangeTrackPan}
+              onOpenClip={onOpenClip}
+              onChangeVisibleWindow={(startPercent, widthPercent) => {
+                const nextWidthPercent = clamp(widthPercent, 10, 100);
+                const nextStartPercent = clamp(startPercent, 0, 100 - nextWidthPercent);
 
-              setVisibleWidthPercent(nextWidthPercent);
-              setVisibleStartPercent(nextStartPercent);
-            }}
-            onResizeTrack={(trackId, nextTrackId, delta) =>
-              setTrackHeights((currentHeights) => {
-                const currentTrackHeight = currentHeights[trackId] ?? 1;
-                const nextTrackHeight = currentHeights[nextTrackId] ?? 1;
-                const totalPairHeight = currentTrackHeight + nextTrackHeight;
-                const deltaRatio = delta / 120;
-                const nextCurrentTrackHeight = clamp(
-                  currentTrackHeight + deltaRatio,
-                  0.55,
-                  totalPairHeight - 0.55,
-                );
+                setVisibleWidthPercent(nextWidthPercent);
+                setVisibleStartPercent(nextStartPercent);
+              }}
+              onResizeTrack={(trackId, nextTrackId, delta) =>
+                setTrackHeights((currentHeights) => {
+                  const currentTrackHeight = currentHeights[trackId] ?? 1;
+                  const nextTrackHeight = currentHeights[nextTrackId] ?? 1;
+                  const totalPairHeight = currentTrackHeight + nextTrackHeight;
+                  const deltaRatio = delta / 120;
+                  const nextCurrentTrackHeight = clamp(
+                    currentTrackHeight + deltaRatio,
+                    0.55,
+                    totalPairHeight - 0.55,
+                  );
 
-                return {
-                  ...currentHeights,
-                  [trackId]: nextCurrentTrackHeight,
-                  [nextTrackId]: totalPairHeight - nextCurrentTrackHeight,
-                };
-              })
-            }
-            onResizeTrackHead={(delta) =>
-              setTrackHeadWidth((currentWidth) => clamp(currentWidth + delta, 250, 430))
-            }
-            onSelectClip={onSelectClip}
-            onSelectTrack={onSelectTrack}
-            playheadPercent={(playheadSeconds / timelineDurationSeconds) * 100}
-            selectedClipId={selectedClipId}
-            selectedTrackId={selectedTrackId}
-            trackHeights={trackHeights}
-            timelineWidthPercent={timelineWidthPercent}
-            tracks={tracks}
-            visibleStartPercent={visibleStartPercent}
-            visibleWidthPercent={visibleWidthPercent}
-            zoomLevel={zoomLevel}
-          />
+                  return {
+                    ...currentHeights,
+                    [trackId]: nextCurrentTrackHeight,
+                    [nextTrackId]: totalPairHeight - nextCurrentTrackHeight,
+                  };
+                })
+              }
+              onResizeTrackHead={(delta) =>
+                setTrackHeadWidth((currentWidth) => clamp(currentWidth + delta, 250, 430))
+              }
+              onSelectClip={onSelectClip}
+              onSelectTrack={onSelectTrack}
+              playheadPercent={(playheadSeconds / timelineDurationSeconds) * 100}
+              selectedClipId={selectedClipId}
+              selectedTrackId={selectedTrackId}
+              trackHeights={trackHeights}
+              timelineWidthPercent={timelineWidthPercent}
+              tracks={tracks}
+              visibleStartPercent={visibleStartPercent}
+              visibleWidthPercent={visibleWidthPercent}
+              zoomLevel={zoomLevel}
+            />
+          ) : (
+            <WaveformCanvas />
+          )}
           <ResizableHandle
             axis="y"
             label="Resize editor and transport"
