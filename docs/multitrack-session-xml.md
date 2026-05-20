@@ -9,7 +9,7 @@ This document describes the multitrack session file format only.
 Recommended multitrack session extension:
 
 ```text
-.oams
+.oasx
 ```
 
 The file extension identifies the file as an Open Audition multitrack session. The file content is XML and must start with an XML declaration and doctype.
@@ -25,7 +25,6 @@ The file extension identifies the file as an Open Audition multitrack session. T
 <multitrack
   version="1.0"
   id="session-main-sfx"
-  projectId="project-macbeth"
   name="Main SFX"
   sampleRate="48000"
   bitDepth="24"
@@ -39,7 +38,6 @@ Rules:
 
 - `version` is required. Initial supported version is `1.0`.
 - `id` identifies this multitrack session.
-- `projectId` references the parent Open Audition project.
 - Times are seconds as decimal numbers unless the field name ends in `At`.
 - Date/time fields are ISO strings with an explicit offset.
 - The session file is nondestructive. It references media and stores edits, not rendered audio.
@@ -53,7 +51,6 @@ Rules:
 <multitrack
   version="1.0"
   id="session-main-sfx"
-  projectId="project-macbeth"
   name="Main SFX"
   sampleRate="48000"
   bitDepth="24"
@@ -341,13 +338,13 @@ Effect rules:
 
 ## Project Reference
 
-The project file should reference a multitrack session with a path ending in `.oams`.
+The project file should reference a multitrack session with a path ending in `.oasx`.
 
 ```xml
 <multitrackSession
   id="session-main-sfx"
   name="Main SFX"
-  path="sessions/main-sfx.oams"
+  path="sessions/main-sfx.oasx"
   sampleRate="48000"
   duration="92.5" />
 ```
