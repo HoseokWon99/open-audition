@@ -6,7 +6,8 @@ import { ResizableHandle } from "../components/editor/ResizableHandle";
 import { TopBar } from "../components/editor/TopBar";
 import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
-import type { Clip, MediaFile, MediaTab, ProjectSummary, Track } from "../types";
+import type { Clip, MediaFile, MediaTab, Track } from "../types/audio";
+import type { ProjectSummary } from "../types/project";
 import { clamp } from "../utils/math";
 import { formatTransportTime } from "../utils/time";
 

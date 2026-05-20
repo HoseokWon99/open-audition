@@ -1,4 +1,4 @@
-import type { SettingsSection } from "../../types";
+import type { SettingsSection } from "../../types/settings";
 
 interface SettingsSidebarProps {
   selectedSection: SettingsSection;

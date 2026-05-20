@@ -1,4 +1,4 @@
-import type { Clip, MediaFile, Track } from "../../types";
+import type { Clip, MediaFile, Track } from "../../types/audio";
 
 interface InspectorProps {
   clip?: Clip;

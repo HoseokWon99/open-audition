@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ProjectList } from "../components/start/ProjectList";
-import type { ProjectSummary } from "../types";
+import type { ProjectSummary } from "../types/project";
 
 interface HomePageProps {
   projects: ProjectSummary[];

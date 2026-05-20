@@ -1,6 +1,6 @@
 import { SettingsContent } from "../components/settings/SettingsContent";
 import { SettingsSidebar } from "../components/settings/SettingsSidebar";
-import type { SettingsSection } from "../types";
+import type { SettingsSection } from "../types/settings";
 
 interface SettingsPageProps {
   selectedSection: SettingsSection;

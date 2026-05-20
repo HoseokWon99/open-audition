@@ -1,4 +1,4 @@
-import type { MediaFile, MediaTab } from "../../types";
+import type { MediaFile, MediaTab } from "../../types/audio";
 import { historyEntries } from "../../data/mockData";
 
 interface MediaBrowserProps {
