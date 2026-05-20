@@ -8,6 +8,7 @@ import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
 import type { Clip, MediaFile, MediaTab, ProjectSummary, Track } from "../types";
 import { clamp } from "../utils/math";
+import { formatTransportTime } from "../utils/time";
 
 interface EditorPageProps {
   activeMediaTab: MediaTab;
@@ -74,13 +75,6 @@ export function EditorPage({
     "--track-head-width": `${trackHeadWidth}px`,
     "--transport-height": `${transportHeight}px`,
   } as React.CSSProperties;
-
-  function formatTime(seconds: number) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds - minutes * 60;
-
-    return `${minutes}:${remainingSeconds.toFixed(3).padStart(6, "0")}`;
-  }
 
   return (
     <main className="oa-shell" style={layoutStyle}>
@@ -170,7 +164,7 @@ export function EditorPage({
               setTransportHeight((currentHeight) => clamp(currentHeight - delta, 42, 90))
             }
           />
-          <TransportBar currentTime={formatTime(playheadSeconds)} />
+          <TransportBar currentTime={formatTransportTime(playheadSeconds)} />
         </section>
       </div>
     </main>

@@ -1,4 +1,5 @@
 import type React from "react";
+import { formatTimelineTimestamp } from "../../utils/time";
 
 interface TimelineRulerProps {
   durationSeconds: number;
@@ -13,17 +14,6 @@ function decimalPlaces(value: number) {
   const decimal = value.toString().split(".")[1];
 
   return decimal?.length ?? 0;
-}
-
-function formatTimestamp(seconds: number, precision: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds - minutes * 60;
-  const [wholeSeconds, decimalSeconds] = remainingSeconds.toFixed(precision).split(".");
-  const formattedSeconds = `${wholeSeconds.padStart(2, "0")}${
-    decimalSeconds ? `.${decimalSeconds}` : ""
-  }`;
-
-  return `${minutes}:${formattedSeconds}`;
 }
 
 function subtickStepForLabelStep(labelStep: number) {
@@ -77,7 +67,7 @@ export function TimelineRuler({
               key={seconds}
               style={{ left: `${(seconds / durationSeconds) * 100}%` }}
             >
-              {isLabelTick ? formatTimestamp(seconds, precision) : null}
+              {isLabelTick ? formatTimelineTimestamp(seconds, precision) : null}
             </span>
           );
         })}
