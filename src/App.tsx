@@ -7,27 +7,27 @@ import { SettingsPage } from "./pages/SettingsPage";
 import type { AppView, MediaTab, SettingsSection } from "./types";
 
 function viewFromHash(): AppView {
-  const hash = window.location.hash.replace("#", "");
+  const hash = window.location.hash.replace("#", "").toLowerCase();
 
   if (hash === "multitrack" || hash === "waveform" || hash === "settings") {
-    return hash;
+    return (hash.charAt(0).toUpperCase() + hash.slice(1)) as AppView;
   }
 
-  return "home";
+  return "Home";
 }
 
 function App() {
   const [activeView, setActiveView] = useState<AppView>(viewFromHash);
-  const [previousEditorView, setPreviousEditorView] = useState<AppView>("multitrack");
+  const [previousEditorView, setPreviousEditorView] = useState<AppView>("Multitrack");
   const [selectedProjectId, setSelectedProjectId] = useState(recentProjects[0].id);
-  const [activeMediaTab, setActiveMediaTab] = useState<MediaTab>("files");
+  const [activeMediaTab, setActiveMediaTab] = useState<MediaTab>("Files");
   const [clips, setClips] = useState(mockClips);
   const [selectedFileId, setSelectedFileId] = useState("session");
   const [tracks, setTracks] = useState(mockTracks);
   const [selectedTrackId, setSelectedTrackId] = useState("track-3");
   const [selectedClipId, setSelectedClipId] = useState("clip-mola");
   const [selectedSettingsSection, setSelectedSettingsSection] =
-    useState<SettingsSection>("device");
+    useState<SettingsSection>("Device");
 
   const selectedProject = useMemo(
     () => recentProjects.find((project) => project.id === selectedProjectId) ?? recentProjects[0],
@@ -35,19 +35,19 @@ function App() {
   );
 
   function navigate(view: AppView) {
-    window.location.hash = view === "home" ? "" : view;
+    window.location.hash = view === "Home" ? "" : view.toLowerCase();
     setActiveView(view);
   }
 
   function openProject(projectId: string) {
     setSelectedProjectId(projectId);
-    navigate("multitrack");
-    setPreviousEditorView("multitrack");
+    navigate("Multitrack");
+    setPreviousEditorView("Multitrack");
   }
 
   function openSettings() {
-    setPreviousEditorView(activeView === "waveform" ? "waveform" : "multitrack");
-    navigate("settings");
+    setPreviousEditorView(activeView === "Waveform" ? "Waveform" : "Multitrack");
+    navigate("Settings");
   }
 
   function openFile(fileId: string) {
@@ -56,13 +56,13 @@ function App() {
     setSelectedFileId(fileId);
 
     if (file?.mediaType === "Multitrack") {
-      navigate("multitrack");
-      setPreviousEditorView("multitrack");
+      navigate("Multitrack");
+      setPreviousEditorView("Multitrack");
       return;
     }
 
-    navigate("waveform");
-    setPreviousEditorView("waveform");
+    navigate("Waveform");
+    setPreviousEditorView("Waveform");
   }
 
   function openClip(clipId: string) {
@@ -71,8 +71,8 @@ function App() {
     if (clip) {
       setSelectedFileId(clip.sourceFileId);
     }
-    navigate("waveform");
-    setPreviousEditorView("waveform");
+    navigate("Waveform");
+    setPreviousEditorView("Waveform");
   }
 
   function updateTrackGain(trackId: string, gainDb: number) {
@@ -101,7 +101,7 @@ function App() {
     );
   }
 
-  if (activeView === "home") {
+  if (activeView === "Home") {
     return (
       <HomePage
         onOpenProject={openProject}
@@ -113,7 +113,7 @@ function App() {
     );
   }
 
-  if (activeView === "settings") {
+  if (activeView === "Settings") {
     return (
       <SettingsPage
         onBackToEditor={() => navigate(previousEditorView)}
@@ -123,7 +123,7 @@ function App() {
     );
   }
 
-  if (activeView === "waveform" || activeView === "multitrack") {
+  if (activeView === "Waveform" || activeView === "Multitrack") {
     return (
       <EditorPage
         activeMediaTab={activeMediaTab}
@@ -133,7 +133,7 @@ function App() {
         onChangeClipTiming={updateClipTiming}
         onChangeTrackGain={updateTrackGain}
         onChangeTrackPan={updateTrackPan}
-        onGoHome={() => navigate("home")}
+        onGoHome={() => navigate("Home")}
         onOpenClip={openClip}
         onOpenFile={openFile}
         onOpenSettings={openSettings}

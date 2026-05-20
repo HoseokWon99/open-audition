@@ -13,7 +13,7 @@ import { formatTransportTime } from "../utils/time";
 interface EditorPageProps {
   activeMediaTab: MediaTab;
   clips: Clip[];
-  editorView: "multitrack" | "waveform";
+  editorView: "Multitrack" | "Waveform";
   files: MediaFile[];
   project: ProjectSummary;
   selectedClipId: string;
@@ -95,14 +95,14 @@ export function EditorPage({
           tracks={tracks}
         />
         <ResizableHandle
-          axis="x"
+          axis="X"
           label="Resize left dock and editor"
           onResize={(delta) =>
             setLeftDockWidth((currentWidth) => clamp(currentWidth + delta, 240, 520))
           }
         />
         <section className="oa-main">
-          {editorView === "multitrack" ? (
+          {editorView === "Multitrack" ? (
             <MultitrackTimeline
               clips={clips}
               durationSeconds={timelineDurationSeconds}
@@ -158,7 +158,7 @@ export function EditorPage({
             <WaveformCanvas />
           )}
           <ResizableHandle
-            axis="y"
+            axis="Y"
             label="Resize editor and transport"
             onResize={(delta) =>
               setTransportHeight((currentHeight) => clamp(currentHeight - delta, 42, 90))

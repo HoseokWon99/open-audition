@@ -43,7 +43,7 @@ export function LeftDock({
         selectedFileId={selectedFileId}
       />
       <ResizableHandle
-        axis="y"
+        axis="Y"
         label="Resize file browser and inspector"
         onResize={(delta) => onResizeInspector(-delta)}
       />

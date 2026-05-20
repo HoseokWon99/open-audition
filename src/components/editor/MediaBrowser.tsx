@@ -22,15 +22,15 @@ export function MediaBrowser({
     <section className="oa-file-panel">
       <div className="oa-panel-tabs" role="tablist">
         <button
-          className={activeTab === "files" ? "is-active" : ""}
-          onClick={() => onTabChange("files")}
+          className={activeTab === "Files" ? "is-active" : ""}
+          onClick={() => onTabChange("Files")}
           type="button"
         >
           Files
         </button>
         <button
-          className={activeTab === "history" ? "is-active" : ""}
-          onClick={() => onTabChange("history")}
+          className={activeTab === "History" ? "is-active" : ""}
+          onClick={() => onTabChange("History")}
           type="button"
         >
           History
@@ -42,7 +42,7 @@ export function MediaBrowser({
           +
         </button>
       </div>
-      {activeTab === "files" ? (
+      {activeTab === "Files" ? (
         <div className="oa-file-list">
           <div className="oa-file-table">
             <div className="oa-file-header">

@@ -46,6 +46,8 @@
 
 ## Conventions
 
+- For union types, use PascalCase string literal values, e.g. `type MediaTab = "Files" | "History";`.
+
 ## Rules
 
 ## References

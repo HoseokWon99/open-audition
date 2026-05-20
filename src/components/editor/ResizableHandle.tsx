@@ -1,7 +1,7 @@
 import type React from "react";
 
 interface ResizableHandleProps {
-  axis: "x" | "y";
+  axis: "X" | "Y";
   label: string;
   onResize: (delta: number) => void;
 }
@@ -10,10 +10,10 @@ export function ResizableHandle({ axis, label, onResize }: ResizableHandleProps)
   function startResize(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault();
 
-    let lastPosition = axis === "x" ? event.clientX : event.clientY;
+    let lastPosition = axis === "X" ? event.clientX : event.clientY;
 
     function handleMove(moveEvent: MouseEvent) {
-      const nextPosition = axis === "x" ? moveEvent.clientX : moveEvent.clientY;
+      const nextPosition = axis === "X" ? moveEvent.clientX : moveEvent.clientY;
       onResize(nextPosition - lastPosition);
       lastPosition = nextPosition;
     }
@@ -30,26 +30,26 @@ export function ResizableHandle({ axis, label, onResize }: ResizableHandleProps)
   return (
     <div
       aria-label={label}
-      className={`oa-resizer oa-resizer-${axis}`}
+      className={`oa-resizer oa-resizer-${axis.toLowerCase()}`}
       onKeyDown={(event) => {
         const step = event.shiftKey ? 24 : 8;
 
-        if (axis === "x" && event.key === "ArrowLeft") {
+        if (axis === "X" && event.key === "ArrowLeft") {
           event.preventDefault();
           onResize(-step);
         }
 
-        if (axis === "x" && event.key === "ArrowRight") {
+        if (axis === "X" && event.key === "ArrowRight") {
           event.preventDefault();
           onResize(step);
         }
 
-        if (axis === "y" && event.key === "ArrowUp") {
+        if (axis === "Y" && event.key === "ArrowUp") {
           event.preventDefault();
           onResize(-step);
         }
 
-        if (axis === "y" && event.key === "ArrowDown") {
+        if (axis === "Y" && event.key === "ArrowDown") {
           event.preventDefault();
           onResize(step);
         }

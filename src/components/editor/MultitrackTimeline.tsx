@@ -93,7 +93,7 @@ export function MultitrackTimeline({
   function startClipTrimDrag(
     event: React.MouseEvent<HTMLElement>,
     clip: Clip,
-    edge: "start" | "end",
+    edge: "Start" | "End",
   ) {
     event.preventDefault();
     event.stopPropagation();
@@ -107,7 +107,7 @@ export function MultitrackTimeline({
     function handleMove(moveEvent: MouseEvent) {
       const deltaPercent = percentFromPointer(moveEvent) - initialPointerPercent;
 
-      if (edge === "start") {
+      if (edge === "Start") {
         const nextStartPercent = clamp(
           initialStartPercent + deltaPercent,
           0,
@@ -162,7 +162,7 @@ export function MultitrackTimeline({
 
   function startOverviewDrag(
     event: React.MouseEvent<HTMLElement>,
-    mode: "move" | "start" | "end",
+    mode: "Move" | "Start" | "End",
   ) {
     event.preventDefault();
     event.stopPropagation();
@@ -174,12 +174,12 @@ export function MultitrackTimeline({
     function handleMove(moveEvent: MouseEvent) {
       const deltaPercent = overviewPercentFromPointer(moveEvent) - initialPointerPercent;
 
-      if (mode === "move") {
+      if (mode === "Move") {
         onChangeVisibleWindow(initialStartPercent + deltaPercent, initialWidthPercent);
         return;
       }
 
-      if (mode === "start") {
+      if (mode === "Start") {
         const nextStartPercent = Math.min(
           initialStartPercent + initialWidthPercent - 10,
           initialStartPercent + deltaPercent,
@@ -245,7 +245,7 @@ export function MultitrackTimeline({
           aria-valuenow={Math.round(visibleWidthPercent)}
           aria-label="Visible timeline range"
           className="oa-overview-window"
-          onMouseDown={(event) => startOverviewDrag(event, "move")}
+          onMouseDown={(event) => startOverviewDrag(event, "Move")}
           role="slider"
           style={overviewStyle}
           tabIndex={0}
@@ -253,12 +253,12 @@ export function MultitrackTimeline({
           <span
             aria-hidden="true"
             className="oa-overview-handle start"
-            onMouseDown={(event) => startOverviewDrag(event, "start")}
+            onMouseDown={(event) => startOverviewDrag(event, "Start")}
           />
           <span
             aria-hidden="true"
             className="oa-overview-handle end"
-            onMouseDown={(event) => startOverviewDrag(event, "end")}
+            onMouseDown={(event) => startOverviewDrag(event, "End")}
           />
         </div>
       </div>
@@ -282,7 +282,7 @@ export function MultitrackTimeline({
               />
               {index < tracks.length - 1 ? (
                 <ResizableHandle
-                  axis="y"
+                  axis="Y"
                   label={`Resize ${track.name}`}
                   onResize={(delta) => onResizeTrack(track.id, tracks[index + 1].id, delta)}
                 />
@@ -291,7 +291,7 @@ export function MultitrackTimeline({
           ))}
         </div>
         <ResizableHandle
-          axis="x"
+          axis="X"
           label="Resize track headers and timeline"
           onResize={onResizeTrackHead}
         />
@@ -343,7 +343,7 @@ export function MultitrackTimeline({
                   >
                     {trackClips.map((clip) => (
                       <button
-                        className={`oa-clip color-${clip.color} ${
+                        className={`oa-clip color-${clip.color.toLowerCase()} ${
                           clip.id === selectedClipId ? "is-selected" : ""
                         }`}
                         key={clip.id}
@@ -365,7 +365,7 @@ export function MultitrackTimeline({
                         <span
                           aria-hidden="true"
                           className="oa-clip-trim start"
-                          onMouseDown={(event) => startClipTrimDrag(event, clip, "start")}
+                          onMouseDown={(event) => startClipTrimDrag(event, clip, "Start")}
                         />
                         <span className="oa-clip-name">{clip.name}</span>
                         <span className="oa-wave-line" />
@@ -373,14 +373,14 @@ export function MultitrackTimeline({
                         <span
                           aria-hidden="true"
                           className="oa-clip-trim end"
-                          onMouseDown={(event) => startClipTrimDrag(event, clip, "end")}
+                          onMouseDown={(event) => startClipTrimDrag(event, clip, "End")}
                         />
                       </button>
                     ))}
                   </div>
                   {index < tracks.length - 1 ? (
                     <ResizableHandle
-                      axis="y"
+                      axis="Y"
                       label={`Resize ${track.name} lane`}
                       onResize={(delta) => onResizeTrack(track.id, tracks[index + 1].id, delta)}
                     />

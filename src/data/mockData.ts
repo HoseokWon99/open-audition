@@ -96,7 +96,7 @@ export const tracks: Track[] = [
   {
     id: "track-1",
     name: "Track 1",
-    color: "green",
+    color: "Green",
     gainDb: 0,
     pan: 0,
     input: "Default Stereo Input",
@@ -105,7 +105,7 @@ export const tracks: Track[] = [
   {
     id: "track-2",
     name: "Track 2",
-    color: "purple",
+    color: "Purple",
     gainDb: 0,
     pan: 0,
     input: "Default Stereo Input",
@@ -114,7 +114,7 @@ export const tracks: Track[] = [
   {
     id: "track-3",
     name: "Track 3",
-    color: "yellow",
+    color: "Yellow",
     gainDb: 0,
     pan: 0,
     input: "Default Stereo Input",
@@ -123,7 +123,7 @@ export const tracks: Track[] = [
   {
     id: "track-4",
     name: "Track 4",
-    color: "teal",
+    color: "Teal",
     gainDb: 0,
     pan: 0,
     input: "Default Stereo Input",
@@ -132,7 +132,7 @@ export const tracks: Track[] = [
   {
     id: "track-5",
     name: "Track 5",
-    color: "purple",
+    color: "Purple",
     gainDb: 0,
     pan: 0,
     input: "Default Stereo Input",
@@ -147,7 +147,7 @@ export const clips: Clip[] = [
     trackId: "track-1",
     startPercent: 0,
     widthPercent: 48,
-    color: "green",
+    color: "Green",
     sourceFileId: "opening",
     gainDb: 0,
     fadeIn: "0:00.250",
@@ -160,7 +160,7 @@ export const clips: Clip[] = [
     trackId: "track-3",
     startPercent: 53,
     widthPercent: 47,
-    color: "yellow",
+    color: "Yellow",
     sourceFileId: "mola",
     gainDb: 0,
     fadeIn: "0:00.000",

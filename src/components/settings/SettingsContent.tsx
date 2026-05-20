@@ -6,7 +6,7 @@ interface SettingsContentProps {
 }
 
 export function SettingsContent({ selectedSection }: SettingsContentProps) {
-  if (selectedSection === "shortcuts") {
+  if (selectedSection === "Shortcuts") {
     return (
       <div className="oa-settings-section">
         <div className="oa-settings-section-title">Keyboard Shortcuts</div>
@@ -21,7 +21,7 @@ export function SettingsContent({ selectedSection }: SettingsContentProps) {
     );
   }
 
-  if (selectedSection === "multitrack") {
+  if (selectedSection === "Multitrack") {
     return (
       <div className="oa-settings-section">
         <div className="oa-settings-section-title">Multitrack</div>
@@ -39,7 +39,7 @@ export function SettingsContent({ selectedSection }: SettingsContentProps) {
     );
   }
 
-  if (selectedSection === "waveform") {
+  if (selectedSection === "Waveform") {
     return (
       <div className="oa-settings-section">
         <div className="oa-settings-section-title">Waveform</div>
@@ -57,7 +57,7 @@ export function SettingsContent({ selectedSection }: SettingsContentProps) {
     );
   }
 
-  if (selectedSection === "appearance") {
+  if (selectedSection === "Appearance") {
     return (
       <div className="oa-settings-section">
         <div className="oa-settings-section-title">Appearance</div>
@@ -70,7 +70,7 @@ export function SettingsContent({ selectedSection }: SettingsContentProps) {
     );
   }
 
-  if (selectedSection === "editing") {
+  if (selectedSection === "Editing") {
     return (
       <div className="oa-settings-section">
         <div className="oa-settings-section-title">Editing</div>

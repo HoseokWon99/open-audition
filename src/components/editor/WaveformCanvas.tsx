@@ -68,7 +68,7 @@ export function WaveformCanvas() {
 
   function startOverviewDrag(
     event: React.MouseEvent<HTMLElement>,
-    mode: "move" | "start" | "end",
+    mode: "Move" | "Start" | "End",
   ) {
     event.preventDefault();
     event.stopPropagation();
@@ -80,12 +80,12 @@ export function WaveformCanvas() {
     function handleMove(moveEvent: MouseEvent) {
       const deltaPercent = overviewPercentFromPointer(moveEvent) - initialPointerPercent;
 
-      if (mode === "move") {
+      if (mode === "Move") {
         changeVisibleWindow(initialStartPercent + deltaPercent, initialWidthPercent);
         return;
       }
 
-      if (mode === "start") {
+      if (mode === "Start") {
         const nextStartPercent = Math.min(
           initialStartPercent + initialWidthPercent - 10,
           initialStartPercent + deltaPercent,
@@ -150,18 +150,18 @@ export function WaveformCanvas() {
         <div
           aria-hidden="true"
           className="oa-wave-overview-window"
-          onMouseDown={(event) => startOverviewDrag(event, "move")}
+          onMouseDown={(event) => startOverviewDrag(event, "Move")}
           style={overviewStyle}
         >
           <span
             aria-hidden="true"
             className="oa-overview-handle start"
-            onMouseDown={(event) => startOverviewDrag(event, "start")}
+            onMouseDown={(event) => startOverviewDrag(event, "Start")}
           />
           <span
             aria-hidden="true"
             className="oa-overview-handle end"
-            onMouseDown={(event) => startOverviewDrag(event, "end")}
+            onMouseDown={(event) => startOverviewDrag(event, "End")}
           />
         </div>
       </div>

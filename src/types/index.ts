@@ -1,14 +1,14 @@
-export type AppView = "home" | "multitrack" | "waveform" | "settings";
+export type AppView = "Home" | "Multitrack" | "Waveform" | "Settings";
 
-export type MediaTab = "files" | "history";
+export type MediaTab = "Files" | "History";
 
 export type SettingsSection =
-  | "device"
-  | "editing"
-  | "multitrack"
-  | "waveform"
-  | "appearance"
-  | "shortcuts";
+  | "Device"
+  | "Editing"
+  | "Multitrack"
+  | "Waveform"
+  | "Appearance"
+  | "Shortcuts";
 
 export interface ProjectSummary {
   id: string;
@@ -34,7 +34,7 @@ export interface Clip {
   trackId: string;
   startPercent: number;
   widthPercent: number;
-  color: "green" | "yellow";
+  color: "Green" | "Yellow";
   sourceFileId: string;
   gainDb: number;
   fadeIn: string;
@@ -45,7 +45,7 @@ export interface Clip {
 export interface Track {
   id: string;
   name: string;
-  color: "green" | "purple" | "yellow" | "teal";
+  color: "Green" | "Purple" | "Yellow" | "Teal";
   gainDb: number;
   pan: number;
   input: string;
