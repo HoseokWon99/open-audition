@@ -4,7 +4,10 @@ import { clips as mockClips, mediaFiles, recentProjects, tracks as mockTracks } 
 import { EditorPage } from "./pages/EditorPage";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
-import type { AppView, MediaTab, SettingsSection } from "./types";
+import type { MediaTab } from "./types/audio";
+import type { SettingsSection } from "./types/settings";
+
+type AppView = "Home" | "Multitrack" | "Waveform" | "Settings";
 
 function viewFromHash(): AppView {
   const hash = window.location.hash.replace("#", "").toLowerCase();

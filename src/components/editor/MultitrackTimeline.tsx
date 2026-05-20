@@ -3,7 +3,7 @@ import type React from "react";
 import { TimelineRuler } from "./TimelineRuler";
 import { TrackHeader } from "./TrackHeader";
 import { ResizableHandle } from "./ResizableHandle";
-import type { Clip, Track } from "../../types";
+import type { Clip, Track } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 interface MultitrackTimelineProps {

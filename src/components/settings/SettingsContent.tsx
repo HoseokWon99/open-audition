@@ -1,5 +1,5 @@
 import { shortcuts } from "../../data/mockData";
-import type { SettingsSection } from "../../types";
+import type { SettingsSection } from "../../types/settings";
 
 interface SettingsContentProps {
   selectedSection: SettingsSection;

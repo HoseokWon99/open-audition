@@ -1,4 +1,6 @@
-import type { Clip, MediaFile, ProjectSummary, Shortcut, Track } from "../types";
+import type { Clip, MediaFile, Track } from "../types/audio";
+import type { ProjectSummary } from "../types/project";
+import type { Shortcut } from "../types/shortcuts";
 
 export const recentProjects: ProjectSummary[] = [
   {

@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Track } from "../../types";
+import type { Track } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 interface TrackHeaderProps {

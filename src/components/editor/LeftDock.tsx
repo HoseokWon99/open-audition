@@ -1,7 +1,7 @@
 import { Inspector } from "./Inspector";
 import { MediaBrowser } from "./MediaBrowser";
 import { ResizableHandle } from "./ResizableHandle";
-import type { Clip, MediaFile, MediaTab, Track } from "../../types";
+import type { Clip, MediaFile, MediaTab, Track } from "../../types/audio";
 
 interface LeftDockProps {
   activeTab: MediaTab;
