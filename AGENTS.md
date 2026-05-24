@@ -49,6 +49,7 @@
 ### TypeScript
 
 - For union types, use PascalCase string literal values, e.g. `type MediaTab = "Files" | "History";`.
+- Do not use type aliases for trivial types.
 - Use pascal case for higher order function
 - Order in typescript file: import phrases -> constant -> internal type&interface&class -> exported class&function -> internal function
 - Order in class: properties -> constructor -> static method -> getter/setter (if needed) -> public method -> private method
