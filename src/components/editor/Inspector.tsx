@@ -1,9 +1,9 @@
-import type { Clip, MediaFile, Track } from "../../types/audio";
+import type { MediaFile, TimelineClip, TimelineTrack } from "../../types/audio";
 
 interface InspectorProps {
-  clip?: Clip;
+  clip?: TimelineClip;
   sourceFile?: MediaFile;
-  track?: Track;
+  track?: TimelineTrack;
 }
 
 export function Inspector({ clip, sourceFile, track }: InspectorProps) {

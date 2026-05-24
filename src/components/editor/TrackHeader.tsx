@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Track } from "../../types/audio";
+import type { TimelineTrack } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 interface TrackHeaderProps {
@@ -8,7 +8,7 @@ interface TrackHeaderProps {
   onChangePan: (pan: number) => void;
   onSelect: () => void;
   style?: React.CSSProperties;
-  track: Track;
+  track: TimelineTrack;
 }
 
 const MIN_ANGLE = -135;

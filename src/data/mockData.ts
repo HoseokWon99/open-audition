@@ -1,4 +1,4 @@
-import type { Clip, MediaFile, Track } from "../types/audio";
+import type { MediaFile, TimelineClip, TimelineTrack } from "../types/audio";
 import type { ProjectSummary } from "../types/project";
 import type { Shortcut } from "../types/shortcuts";
 
@@ -50,7 +50,7 @@ export const mediaFiles: MediaFile[] = [
     channels: "Stereo",
     sourceFormat: "MP3 192 Kbps",
     mediaType: "Audio",
-    filePath: "/Users/.../Imported Files/mola mola.mp3",
+    filepath: "/Users/.../Imported Files/mola mola.mp3",
   },
   {
     id: "cat",
@@ -60,7 +60,7 @@ export const mediaFiles: MediaFile[] = [
     channels: "Stereo",
     sourceFormat: "MP3 192 Kbps",
     mediaType: "Audio",
-    filePath: "/Users/.../Imported Files/고양이.mp3",
+    filepath: "/Users/.../Imported Files/고양이.mp3",
   },
   {
     id: "session",
@@ -70,7 +70,7 @@ export const mediaFiles: MediaFile[] = [
     channels: "Stereo",
     sourceFormat: "Open Audition Multitrack Session",
     mediaType: "Multitrack",
-    filePath: "/Users/.../Audition/26.0/물안경/물안경.sesx",
+    filepath: "/Users/.../Audition/26.0/물안경/물안경.sesx",
   },
   {
     id: "ending",
@@ -80,7 +80,7 @@ export const mediaFiles: MediaFile[] = [
     channels: "Stereo",
     sourceFormat: "MP3 192 Kbps",
     mediaType: "Audio",
-    filePath: "/Users/.../Imported Files/엔딩.mp3",
+    filepath: "/Users/.../Imported Files/엔딩.mp3",
   },
   {
     id: "opening",
@@ -90,11 +90,11 @@ export const mediaFiles: MediaFile[] = [
     channels: "Stereo",
     sourceFormat: "MP3 192 Kbps",
     mediaType: "Audio",
-    filePath: "/Users/.../Imported Files/오프닝.mp3",
+    filepath: "/Users/.../Imported Files/오프닝.mp3",
   },
 ];
 
-export const tracks: Track[] = [
+export const tracks: TimelineTrack[] = [
   {
     id: "track-1",
     name: "Track 1",
@@ -142,7 +142,7 @@ export const tracks: Track[] = [
   },
 ];
 
-export const clips: Clip[] = [
+export const clips: TimelineClip[] = [
   {
     id: "clip-opening",
     name: "opening",

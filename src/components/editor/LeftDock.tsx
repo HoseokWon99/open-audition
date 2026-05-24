@@ -1,15 +1,15 @@
 import { Inspector } from "./Inspector";
 import { MediaBrowser } from "./MediaBrowser";
 import { ResizableHandle } from "./ResizableHandle";
-import type { Clip, MediaFile, MediaTab, Track } from "../../types/audio";
+import type { MediaFile, MediaTab, TimelineClip, TimelineTrack } from "../../types/audio";
 
 interface LeftDockProps {
   activeTab: MediaTab;
-  clips: Clip[];
+  clips: TimelineClip[];
   files: MediaFile[];
   selectedClipId: string;
   selectedFileId: string;
-  tracks: Track[];
+  tracks: TimelineTrack[];
   onResizeInspector: (delta: number) => void;
   onOpenFile: (fileId: string) => void;
   onSelectFile: (fileId: string) => void;

@@ -1,4 +1,4 @@
-import type { ZodIssue } from "zod";
+import type { core } from "zod";
 
 export type MediaTab = "Files" | "History";
 
@@ -10,10 +10,10 @@ export interface MediaFile {
   channels: string;
   sourceFormat: string;
   mediaType: "Audio" | "Multitrack";
-  filePath: string;
+  filepath: string;
 }
 
-export interface Clip {
+export interface TimelineClip {
   id: string;
   name: string;
   trackId: string;
@@ -27,7 +27,7 @@ export interface Clip {
   duration: string;
 }
 
-export interface Track {
+export interface TimelineTrack {
   id: string;
   name: string;
   color: "Green" | "Purple" | "Yellow" | "Teal";
@@ -38,11 +38,8 @@ export interface Track {
 }
 
 export type TrackHeight = "Small" | "Medium" | "Large";
-
 export type FadeCurve = "Linear" | "EqualPower" | "Exponential" | "Logarithmic";
-
 export type KeyframeTarget = "GainDb" | "Pan";
-
 export type KeyframeCurve = "Hold" | "Linear" | "EaseIn" | "EaseOut";
 
 export type EffectType =
@@ -60,7 +57,7 @@ export type EffectParamType = "Number" | "String" | "Boolean";
 
 export type EffectParamValue = number | string | boolean;
 
-export interface MultitrackSession {
+export interface Multitrack {
   version: "1.0";
   id: string;
   name: string;
@@ -70,7 +67,7 @@ export interface MultitrackSession {
   updatedAt: string;
   duration: number;
   mediaAssets: MediaAsset[];
-  tracks: MultitrackTrack[];
+  tracks: Track[];
 }
 
 export interface MediaAsset {
@@ -83,7 +80,7 @@ export interface MediaAsset {
   hash?: string;
 }
 
-export interface MultitrackTrack {
+export interface Track {
   index: number;
   name: string;
   color?: string;
@@ -93,11 +90,11 @@ export interface MultitrackTrack {
   solo: boolean;
   gainDb: number;
   pan: number;
-  clips: MultitrackClip[];
+  clips: Clip[];
   effects: Effect[];
 }
 
-export interface MultitrackClip {
+export interface Clip {
   id: string;
   assetId: string;
   name?: string;
@@ -152,5 +149,5 @@ export interface MultitrackSemanticIssue {
 export type ParseMultitrackXmlError =
   | { type: "DecodeFailed"; message: string }
   | { type: "MalformedXml"; message: string }
-  | { type: "SchemaInvalid"; issues: ZodIssue[] }
+  | { type: "SchemaInvalid"; issues: core.$ZodIssue[] }
   | { type: "SemanticInvalid"; issues: MultitrackSemanticIssue[] };

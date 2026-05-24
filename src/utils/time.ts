@@ -1,3 +1,4 @@
+
 export function formatTransportTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds - minutes * 60;

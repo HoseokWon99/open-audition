@@ -6,21 +6,21 @@ import { ResizableHandle } from "../components/editor/ResizableHandle";
 import { TopBar } from "../components/editor/TopBar";
 import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
-import type { Clip, MediaFile, MediaTab, Track } from "../types/audio";
+import type { MediaFile, MediaTab, TimelineClip, TimelineTrack } from "../types/audio";
 import type { ProjectSummary } from "../types/project";
 import { clamp } from "../utils/math";
 import { formatTransportTime } from "../utils/time";
 
 interface EditorPageProps {
   activeMediaTab: MediaTab;
-  clips: Clip[];
+  clips: TimelineClip[];
   editorView: "Multitrack" | "Waveform";
   files: MediaFile[];
   project: ProjectSummary;
   selectedClipId: string;
   selectedFileId: string;
   selectedTrackId: string;
-  tracks: Track[];
+  tracks: TimelineTrack[];
   onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
   onChangeTrackGain: (trackId: string, gainDb: number) => void;
   onChangeTrackPan: (trackId: string, pan: number) => void;

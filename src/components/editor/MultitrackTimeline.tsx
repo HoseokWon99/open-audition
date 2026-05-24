@@ -3,18 +3,18 @@ import type React from "react";
 import { TimelineRuler } from "./TimelineRuler";
 import { TrackHeader } from "./TrackHeader";
 import { ResizableHandle } from "./ResizableHandle";
-import type { Clip, Track } from "../../types/audio";
+import type { TimelineClip, TimelineTrack } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 interface MultitrackTimelineProps {
-  clips: Clip[];
+  clips: TimelineClip[];
   durationSeconds: number;
   playheadPercent: number;
   timelineWidthPercent: number;
   selectedClipId: string;
   selectedTrackId: string;
   trackHeights: Record<string, number>;
-  tracks: Track[];
+  tracks: TimelineTrack[];
   visibleStartPercent: number;
   visibleWidthPercent: number;
   zoomLevel: number;
@@ -92,7 +92,7 @@ export function MultitrackTimeline({
 
   function startClipTrimDrag(
     event: React.MouseEvent<HTMLElement>,
-    clip: Clip,
+    clip: TimelineClip,
     edge: "Start" | "End",
   ) {
     event.preventDefault();
