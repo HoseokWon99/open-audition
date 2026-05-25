@@ -53,6 +53,7 @@
 - Use pascal case for higher order function
 - Order in typescript file: import phrases -> constant -> internal type&interface&class -> exported class&function -> internal function
 - Order in class: properties -> constructor -> static method -> getter/setter (if needed) -> public method -> private method
+- Avoid throwing errors for recoverable failures; return `Result` / `ResultAsync` from `neverthrow` with `OpenAuditionError` instead.
 
 ## Rules
 
