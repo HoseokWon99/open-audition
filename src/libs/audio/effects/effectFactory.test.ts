@@ -20,6 +20,18 @@ function createFakeDelay(context: BaseAudioContext): DelayNode {
   } as unknown as DelayNode;
 }
 
+function createFakeFilter(context: BaseAudioContext): BiquadFilterNode {
+  return {
+    context,
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    type: "lowpass",
+    frequency: { value: 0 },
+    Q: { value: 0 },
+    gain: { value: 0 },
+  } as unknown as BiquadFilterNode;
+}
+
 function createFakeConvolver(context: BaseAudioContext): ConvolverNode {
   return {
     context,
@@ -33,6 +45,7 @@ function createFakeContext(): BaseAudioContext {
   const context = {
     createGain: vi.fn(() => createFakeGain(context as unknown as BaseAudioContext)),
     createDelay: vi.fn(() => createFakeDelay(context as unknown as BaseAudioContext)),
+    createBiquadFilter: vi.fn(() => createFakeFilter(context as unknown as BaseAudioContext)),
     createConvolver: vi.fn(() => createFakeConvolver(context as unknown as BaseAudioContext)),
   };
 
@@ -40,6 +53,59 @@ function createFakeContext(): BaseAudioContext {
 }
 
 describe("createRuntimeEffect", () => {
+  it("creates a gain effect from serializable effect params", () => {
+    const context = createFakeContext();
+    const effect: Effect = {
+      index: 0,
+      type: "Gain",
+      enabled: true,
+      params: [{ name: "gainDb", type: "Number", value: 3 }],
+    };
+
+    const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
+
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().id).toBe("effect-0-gain");
+  });
+
+  it("creates an EQ effect from serializable effect params", () => {
+    const context = createFakeContext();
+    const effect: Effect = {
+      index: 4,
+      type: "Eq",
+      enabled: true,
+      params: [
+        { name: "lowGainDb", type: "Number", value: -2 },
+        { name: "midGainDb", type: "Number", value: 1 },
+        { name: "highGainDb", type: "Number", value: 3 },
+      ],
+    };
+
+    const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
+
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().id).toBe("effect-4-eq");
+  });
+
+  it("creates a filter effect from serializable effect params", () => {
+    const context = createFakeContext();
+    const effect: Effect = {
+      index: 5,
+      type: "Filter",
+      enabled: true,
+      params: [
+        { name: "filterType", type: "String", value: "HighPass" },
+        { name: "frequencyHz", type: "Number", value: 120 },
+        { name: "q", type: "Number", value: 0.9 },
+      ],
+    };
+
+    const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
+
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().id).toBe("effect-5-filter");
+  });
+
   it("creates a delay effect from serializable effect params", () => {
     const context = createFakeContext();
     const effect: Effect = {
@@ -114,18 +180,22 @@ describe("createRuntimeEffect", () => {
     expect(result._unsafeUnwrapErr().type).toBe("AudioEffectImpulseMissing");
   });
 
-  it("returns an error for realtime-unsupported effects", () => {
+  it("returns an offline-only error for non-realtime effects", () => {
     const context = createFakeContext();
-    const effect: Effect = {
-      index: 3,
-      type: "NoiseReduction",
-      enabled: true,
-      params: [],
-    };
+    const offlineTypes: Effect["type"][] = ["Normalize", "PitchShift", "TimeStretch", "NoiseReduction"];
 
-    const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
+    for (const type of offlineTypes) {
+      const effect: Effect = {
+        index: 3,
+        type,
+        enabled: true,
+        params: [],
+      };
 
-    expect(result.isErr()).toBe(true);
-    expect(result._unsafeUnwrapErr().type).toBe("AudioEffectUnsupported");
+      const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
+
+      expect(result.isErr()).toBe(true);
+      expect(result._unsafeUnwrapErr().type).toBe("AudioEffectOfflineOnly");
+    }
   });
 });
