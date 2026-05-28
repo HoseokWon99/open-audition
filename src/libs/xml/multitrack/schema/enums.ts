@@ -1,4 +1,4 @@
-import type { EffectParamType } from "../../../audio/effects/effectParams";
+import type { EffectParamType } from "../../../audio/effects";
 import type { EffectType, FadeCurve, KeyframeCurve, KeyframeTarget, TrackHeight } from "../../../../types/audio";
 import { mapXmlValue } from "./primitives";
 

@@ -1,5 +1,5 @@
 import type { core } from "zod";
-import type { EffectParam } from "../libs/audio/effects/effectParams";
+import type { EffectParam } from "../libs/audio/effects";
 
 export type MediaTab = "Files" | "History";
 
