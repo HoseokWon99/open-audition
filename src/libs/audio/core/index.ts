@@ -4,3 +4,8 @@ export type { AudioChain } from "./audioChain";
 export type { AudioEffect } from "./audioEffect";
 export { createClipChain, createMasterChain, createTrackChain } from "./mixChains";
 export type { ClipChainOptions, MasterChainOptions, TrackChainOptions } from "./mixChains";
+export { createDelayEffect } from "../effects/delayEffect";
+export type { DelayEffect } from "../effects/delayEffect";
+export { createReverbEffect } from "../effects/reverbEffect";
+export type { ReverbEffect } from "../effects/reverbEffect";
+export { createRuntimeEffect } from "../effects/effectFactory";
