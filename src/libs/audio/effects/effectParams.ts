@@ -1,5 +1,4 @@
-import type { EffectParamType } from "../../../types/audio";
-
+export type EffectParamType = "Number" | "String" | "Boolean";
 export type EffectParamValue = number | string | boolean;
 
 export interface EffectParam {

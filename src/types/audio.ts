@@ -54,8 +54,6 @@ export type EffectType =
   | "NoiseReduction"
   | "Normalize";
 
-export type EffectParamType = "Number" | "String" | "Boolean";
-
 export interface Multitrack {
   version: "1.0";
   id: string;

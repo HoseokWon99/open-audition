@@ -1,11 +1,5 @@
-import type {
-  EffectParamType,
-  EffectType,
-  FadeCurve,
-  KeyframeCurve,
-  KeyframeTarget,
-  TrackHeight,
-} from "../../../../types/audio";
+import type { EffectParamType } from "../../../audio/effects/effectParams";
+import type { EffectType, FadeCurve, KeyframeCurve, KeyframeTarget, TrackHeight } from "../../../../types/audio";
 import { mapXmlValue } from "./primitives";
 
 export const trackHeightSchema = mapXmlValue<TrackHeight>(
