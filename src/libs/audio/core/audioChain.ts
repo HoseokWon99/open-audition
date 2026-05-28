@@ -23,7 +23,6 @@ interface AudioChainOptions {
 
 export function createAudioChain(options: AudioChainOptions): Result<AudioChain, OpenAuditionError> {
   const chain = new ManagedAudioChain(options.manager, options.input, options.output);
-
   return chain.initialize(options.effects ?? []).map(() => chain);
 }
 
@@ -43,7 +42,6 @@ class ManagedAudioChain implements AudioChain {
       .andThen(() => this.activateEffects(effects))
       .andThen(() => {
         this.effects = effects;
-
         return this.rebuildInternalConnections();
       });
   }
@@ -53,7 +51,6 @@ class ManagedAudioChain implements AudioChain {
       .andThen(() => this.activateEffects(effects))
       .andThen(() => {
         this.effects = effects;
-
         return this.rebuildInternalConnections();
       });
   }
@@ -89,7 +86,8 @@ class ManagedAudioChain implements AudioChain {
   }
 
   private registerEndpoints(): Result<void, OpenAuditionError> {
-    return this.manager.register(this.input).andThen(() => this.manager.register(this.output));
+    return this.manager.register(this.input)
+        .andThen(() => this.manager.register(this.output));
   }
 
   private activateEffects(effects: AudioEffect[]): Result<void, OpenAuditionError> {
