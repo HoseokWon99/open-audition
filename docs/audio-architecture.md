@@ -179,6 +179,22 @@ AudioBufferSourceNode per active clip
 
 Important rule: `AudioBufferSourceNode` is one-shot. The engine should not try to pause and resume nodes. On play, seek, clip move, or graph-changing edit, it stops the current scheduled sources and schedules a new graph from the current transport position.
 
+### Audio Chain Structure
+
+Realtime and offline playback use the same chain shape:
+
+```text
+Clip Chain -> Track Chain -> Master Chain -> Output
+```
+
+Clip chains start at an `AudioBufferSourceNode`, apply clip gain, fade automation, keyframe automation, and clip effects, then feed the owning track input bus.
+
+Track chains receive one or more clip chains, apply track gain, pan, and track effects, then feed the master input bus.
+
+The master chain receives the summed track output, applies final master gain, optional master effects, and peak/clipping metering, then connects to the realtime destination or offline render destination.
+
+`AudioNodeManager` owns raw node registration and Web Audio connections. `AudioEffect.activate(manager)` registers simple effect nodes or registers and wires private internal nodes for compound effects. `AudioChain` owns ordered topology for one chain and only connects into each effect's public `input` and out from its public `output`. Project and XML state store effect intent and parameters only; they never store live `AudioNode` objects.
+
 ### Scheduling Model
 
 The transport clock tracks:
