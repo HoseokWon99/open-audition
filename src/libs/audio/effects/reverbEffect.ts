@@ -1,8 +1,7 @@
 import { err, ok } from "neverthrow";
 import type { Result } from "neverthrow";
 import type { OpenAuditionError } from "../../../types/error";
-import type { AudioEffect } from "../core/audioEffect";
-import type { AudioNodeManager } from "../core/audioNodeManager";
+import type { AudioEffect, AudioNodeManager } from "../core";
 import { clamp } from "./effectParams";
 
 export interface ReverbEffect extends AudioEffect {

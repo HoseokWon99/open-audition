@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AudioNodeManager } from "../core/audioNodeManager";
+import { AudioNodeManager } from "../core";
 import { createDelayEffect } from "./delayEffect";
 
 interface FakeAudioParam {

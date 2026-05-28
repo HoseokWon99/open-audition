@@ -1,7 +1,6 @@
 import type { Result } from "neverthrow";
 import type { OpenAuditionError } from "../../../types/error";
-import type { AudioEffect } from "../core/audioEffect";
-import type { AudioNodeManager } from "../core/audioNodeManager";
+import type { AudioEffect, AudioNodeManager } from "../core";
 import { clamp } from "./effectParams";
 
 const MIN_GAIN_DB = -96;
