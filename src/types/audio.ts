@@ -1,4 +1,5 @@
 import type { core } from "zod";
+import type { EffectParam } from "../libs/audio/effects/effectParams";
 
 export type MediaTab = "Files" | "History";
 
@@ -54,8 +55,6 @@ export type EffectType =
   | "Normalize";
 
 export type EffectParamType = "Number" | "String" | "Boolean";
-
-export type EffectParamValue = number | string | boolean;
 
 export interface Multitrack {
   version: "1.0";
@@ -133,12 +132,6 @@ export interface Effect {
   type: EffectType;
   enabled: boolean;
   params: EffectParam[];
-}
-
-export interface EffectParam {
-  name: string;
-  type: EffectParamType;
-  value: EffectParamValue;
 }
 
 export interface MultitrackSemanticIssue {

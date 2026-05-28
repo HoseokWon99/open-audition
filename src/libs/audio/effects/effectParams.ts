@@ -1,4 +1,12 @@
-import type { EffectParam, EffectParamValue } from "../../../types/audio";
+import type { EffectParamType } from "../../../types/audio";
+
+export type EffectParamValue = number | string | boolean;
+
+export interface EffectParam {
+  name: string;
+  type: EffectParamType;
+  value: EffectParamValue;
+}
 
 export function getNumberParam(params: EffectParam[], name: string, fallback: number): number {
   const value = getParamValue(params, name);
