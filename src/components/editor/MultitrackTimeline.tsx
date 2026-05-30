@@ -3,7 +3,8 @@ import type React from "react";
 import { TimelineRuler } from "./TimelineRuler";
 import { TrackHeader } from "./TrackHeader";
 import { ResizableHandle } from "./ResizableHandle";
-import type { TimelineClip, TimelineTrack } from "../../types/audio";
+import { ClipWaveformPreview } from "./ClipWaveformPreview";
+import type { MediaFile, TimelineClip, TimelineTrack } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 interface MultitrackTimelineProps {
@@ -18,6 +19,7 @@ interface MultitrackTimelineProps {
   visibleStartPercent: number;
   visibleWidthPercent: number;
   zoomLevel: number;
+  getClipFile: (clip: TimelineClip) => MediaFile | undefined;
   onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
   onChangeTrackGain: (trackId: string, gainDb: number) => void;
   onChangeTrackPan: (trackId: string, pan: number) => void;
@@ -42,6 +44,7 @@ export function MultitrackTimeline({
   visibleStartPercent,
   visibleWidthPercent,
   zoomLevel,
+  getClipFile,
   onChangeClipTiming,
   onChangeTrackGain,
   onChangeTrackPan,
@@ -343,9 +346,7 @@ export function MultitrackTimeline({
                   >
                     {trackClips.map((clip) => (
                       <button
-                        className={`oa-clip color-${clip.color.toLowerCase()} ${
-                          clip.id === selectedClipId ? "is-selected" : ""
-                        }`}
+                        className={`oa-clip ${clip.id === selectedClipId ? "is-selected" : ""}`}
                         key={clip.id}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -357,9 +358,10 @@ export function MultitrackTimeline({
                         }}
                         onDoubleClick={() => onOpenClip(clip.id)}
                         style={{
+                          "--clip-color": clip.color,
                           left: `${clip.startPercent}%`,
                           width: `${clip.widthPercent}%`,
-                        }}
+                        } as React.CSSProperties}
                         type="button"
                       >
                         <span
@@ -368,8 +370,7 @@ export function MultitrackTimeline({
                           onMouseDown={(event) => startClipTrimDrag(event, clip, "Start")}
                         />
                         <span className="oa-clip-name">{clip.name}</span>
-                        <span className="oa-wave-line" />
-                        <span className="oa-wave-line second" />
+                        <ClipWaveformPreview file={getClipFile(clip)} />
                         <span
                           aria-hidden="true"
                           className="oa-clip-trim end"

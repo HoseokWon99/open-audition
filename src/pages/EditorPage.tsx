@@ -238,6 +238,7 @@ export function EditorPage({
             <MultitrackTimeline
               clips={clips}
               durationSeconds={timelineDurationSeconds}
+              getClipFile={(clip) => files.find((file) => file.id === clip.sourceFileId)}
               onChangePlayhead={(percent) =>
                 setTransportPosition((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
               }

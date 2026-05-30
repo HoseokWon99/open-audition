@@ -64,9 +64,9 @@ export function TrackHeader({
 
   return (
     <button
-      className={`oa-track-head color-${track.color} ${isSelected ? "is-selected" : ""}`}
+      className={`oa-track-head ${isSelected ? "is-selected" : ""}`}
       onClick={onSelect}
-      style={style}
+      style={{ ...style, "--track-color": track.color } as React.CSSProperties}
       type="button"
     >
       <span className="oa-track-name">⌁ {track.name}</span>
