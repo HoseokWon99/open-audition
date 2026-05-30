@@ -29,6 +29,26 @@ describe("resolveAudioSourceUrl", () => {
     ).toBe("asset:///Users/test/opening.mp3");
   });
 
+  it("converts local mp3 and wav sample paths", () => {
+    expect(
+      resolveAudioSourceUrl(
+        { ...audioFile, filepath: "/Users/hoseok/Desktop/music/mola mola.mp3" },
+        (path) => `asset://${path}`,
+      ),
+    ).toBe("asset:///Users/hoseok/Desktop/music/mola mola.mp3");
+
+    expect(
+      resolveAudioSourceUrl(
+        { ...audioFile, filepath: "/Users/hoseok/Desktop/music/영차영차.wav" },
+        (path) => `asset://${path}`,
+      ),
+    ).toBe("asset:///Users/hoseok/Desktop/music/영차영차.wav");
+  });
+
+  it("ignores unsupported local file extensions", () => {
+    expect(resolveAudioSourceUrl({ ...audioFile, filepath: "/Users/test/opening.pkf" })).toBeNull();
+  });
+
   it("ignores placeholder and non-audio files", () => {
     expect(resolveAudioSourceUrl({ ...audioFile, filepath: "/Users/.../opening.mp3" })).toBeNull();
     expect(resolveAudioSourceUrl({ ...audioFile, mediaType: "Multitrack" })).toBeNull();
