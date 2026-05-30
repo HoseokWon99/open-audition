@@ -959,13 +959,21 @@ button {
 .oa-clip::after {
   content: "";
   position: absolute;
-  left: 0;
+  left: 2px;
   right: 0;
   top: 50%;
-  z-index: 1;
-  height: 1px;
-  background: color-mix(in srgb, var(--clip-color) 46%, #e9f9f2);
-  opacity: 0.62;
+  z-index: 2;
+  height: 2px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--clip-color) 78%, #f4fff9),
+      color-mix(in srgb, var(--clip-color) 44%, #f4fff9)
+    );
+  box-shadow:
+    0 -1px 0 color-mix(in srgb, var(--clip-color) 22%, transparent),
+    0 1px 0 rgba(0, 0, 0, 0.42);
+  opacity: 0.92;
   pointer-events: none;
 }
 
@@ -1060,7 +1068,6 @@ button {
   gap: 2px;
   min-width: 0;
   padding: 0 12px;
-  border-top: 1px solid color-mix(in srgb, var(--clip-color) 26%, transparent);
   overflow: hidden;
 }
 
