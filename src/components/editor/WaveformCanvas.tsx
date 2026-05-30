@@ -1,7 +1,7 @@
 import { TimelineRuler } from "./TimelineRuler";
 import { useWaveformSelection } from "../../hooks/useWaveformSelection";
 import { useWaveformViewport } from "../../hooks/useWaveformViewport";
-import { useWaveSurferRenderer } from "../../hooks/useWaveSurferRenderer";
+import { useWaveSurfer } from "../../hooks/useWaveSurfer";
 import type { MediaFile } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
@@ -12,17 +12,12 @@ const bars = Array.from({ length: 180 }, (_, index) => {
   return clamp(rise * fall * variance, 0.08, 1);
 });
 
-const fallbackWaveformPeaks = [
-  bars,
-  bars.map((height, index) => clamp(height * (0.88 + Math.sin(index * 0.21) * 0.12), 0.08, 1)),
-];
-
 interface WaveformCanvasProps {
   file?: MediaFile;
 }
 
 export function WaveformCanvas({ file }: WaveformCanvasProps) {
-  const waveformRef = useWaveSurferRenderer(file, fallbackWaveformPeaks);
+  const controller = useWaveSurfer(file);
   const {
     contentStyle,
     changeVisibleWindow,
@@ -116,7 +111,11 @@ export function WaveformCanvas({ file }: WaveformCanvasProps) {
           <div className="oa-floating-gain" style={selectionStyle}>
             ▥ ◯ +0 dB ↗
           </div>
-          <div aria-label="Rendered waveform" className="oa-wavesurfer-waveform" ref={waveformRef} />
+          <div
+            aria-label="Rendered waveform"
+            className="oa-wavesurfer-waveform"
+            ref={controller.containerRef}
+          />
           <div className="oa-db-scale">
             <span>dB</span>
             <span>-3</span>
