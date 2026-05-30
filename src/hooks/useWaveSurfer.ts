@@ -73,9 +73,10 @@ export function useWaveSurfer(
       fillParent: true,
       interact: false,
       normalize: true,
+      duration: fallbackDurationSeconds,
+      peaks: fallbackWaveformPeaks,
       splitChannels: [{ overlay: false }, { overlay: false }],
       ...optionsRef.current,
-      ...(audioSourceUrl ? {} : { duration: fallbackDurationSeconds, peaks: fallbackWaveformPeaks }),
     });
 
     waveSurferRef.current = waveSurfer;
@@ -125,7 +126,7 @@ export function useWaveSurfer(
     ];
 
     if (audioSourceUrl) {
-      void waveSurfer.load(audioSourceUrl).catch((error: unknown) => {
+      void waveSurfer.load(audioSourceUrl, fallbackWaveformPeaks, fallbackDurationSeconds).catch((error: unknown) => {
         if (!isCurrent) {
           return;
         }
