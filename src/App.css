@@ -1415,6 +1415,18 @@ button {
   background: #51e7ad;
 }
 
+.oa-wave-overview-selection {
+  position: absolute;
+  left: calc(26px + (100% - 52px) * var(--selection-start) / 100);
+  top: 12px;
+  bottom: 12px;
+  width: calc((100% - 52px) * var(--selection-width) / 100);
+  z-index: 1;
+  border-left: 1px solid #e4e8f0;
+  border-right: 1px solid #e4e8f0;
+  background: rgba(244, 246, 255, 0.92);
+}
+
 .oa-wave-overview-window {
   position: absolute;
   left: calc(26px + (100% - 52px) * var(--overview-start) / 100);
@@ -1452,7 +1464,7 @@ button {
   grid-template-rows: 1fr 2px 1fr;
   height: 100%;
   min-width: 100%;
-  border-left: 2px solid #d92c21;
+  border-left: 1px solid #303030;
   background:
     repeating-linear-gradient(90deg, transparent 0 127px, rgba(18, 110, 27, 0.65) 128px),
     repeating-linear-gradient(0deg, transparent 0 56px, rgba(18, 110, 27, 0.65) 57px),
@@ -1475,6 +1487,22 @@ button {
   flex: 1;
   max-height: 100%;
   background: #00d99c;
+}
+
+.oa-wave-selection {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  left: calc(var(--selection-start) * 1%);
+  width: calc(var(--selection-width) * 1%);
+  border-left: 1px solid #edf0f8;
+  border-right: 1px solid #edf0f8;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 127px, rgba(135, 187, 140, 0.34) 128px),
+    repeating-linear-gradient(0deg, transparent 0 56px, rgba(135, 187, 140, 0.34) 57px),
+    rgba(246, 247, 255, 0.95);
+  pointer-events: none;
 }
 
 .oa-channel-divider {
@@ -1500,7 +1528,6 @@ button {
   left: 5px;
   width: 1px;
   background: #ff3a2c;
-  box-shadow: 0 0 0 1px rgba(255, 58, 44, 0.16);
 }
 
 .oa-fade-handle {
@@ -1515,15 +1542,17 @@ button {
 
 .oa-floating-gain {
   position: absolute;
-  left: 18%;
-  top: 39%;
-  z-index: 2;
+  left: calc(var(--selection-center, 44) * 1%);
+  top: 43%;
+  z-index: 3;
   height: 38px;
   padding: 8px 12px;
-  border: 1px solid #555;
-  background: rgba(54, 54, 54, 0.82);
+  border: 1px solid #4d4f54;
+  background: rgba(68, 68, 70, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
   color: #58b9ff;
   font-size: 15px;
+  transform: translateX(-50%);
 }
 
 .oa-db-scale {
@@ -1538,6 +1567,106 @@ button {
   color: #a7a7a7;
   background: rgba(5, 5, 5, 0.35);
   font-size: 12px;
+}
+
+.oa-wave-selection-menu {
+  position: fixed;
+  z-index: 30;
+  display: grid;
+  min-width: 236px;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 14px;
+  background: rgba(225, 226, 226, 0.82);
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.oa-menu-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #202124;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.oa-menu-submenu {
+  position: relative;
+}
+
+.oa-menu-submenu-panel {
+  position: absolute;
+  left: calc(100% + 7px);
+  top: -7px;
+  display: none;
+  min-width: 178px;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 14px;
+  background: rgba(225, 226, 226, 0.86);
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.oa-menu-submenu.open .oa-menu-submenu-panel,
+.oa-menu-submenu:not(.collapsed):hover .oa-menu-submenu-panel,
+.oa-menu-submenu:not(.collapsed):focus-within .oa-menu-submenu-panel {
+  display: grid;
+}
+
+.oa-menu-submenu.open > .oa-menu-item,
+.oa-menu-submenu:not(.collapsed):hover > .oa-menu-item,
+.oa-menu-submenu:not(.collapsed):focus-within > .oa-menu-item {
+  background: #1777db;
+  color: #ffffff;
+}
+
+.oa-menu-separator {
+  height: 1px;
+  margin: 5px 9px;
+  background: rgba(60, 60, 67, 0.18);
+}
+
+.oa-menu-shortcut,
+.oa-menu-chevron {
+  color: rgba(60, 60, 67, 0.42);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.oa-menu-submenu.open > .oa-menu-item .oa-menu-shortcut,
+.oa-menu-submenu.open > .oa-menu-item .oa-menu-chevron,
+.oa-menu-submenu:not(.collapsed):hover > .oa-menu-item .oa-menu-shortcut,
+.oa-menu-submenu:not(.collapsed):hover > .oa-menu-item .oa-menu-chevron,
+.oa-menu-submenu:not(.collapsed):focus-within > .oa-menu-item .oa-menu-shortcut,
+.oa-menu-submenu:not(.collapsed):focus-within > .oa-menu-item .oa-menu-chevron,
+.oa-menu-item:hover .oa-menu-shortcut,
+.oa-menu-item:hover .oa-menu-chevron,
+.oa-menu-item:focus-visible .oa-menu-shortcut,
+.oa-menu-item:focus-visible .oa-menu-chevron {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.oa-menu-item:hover,
+.oa-menu-item:focus-visible {
+  background: #1777db;
+  color: #ffffff;
+  outline: none;
 }
 
 .oa-settings {

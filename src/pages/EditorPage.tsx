@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type React from "react";
 import { LeftDock } from "../components/editor/LeftDock";
 import { MultitrackTimeline } from "../components/editor/MultitrackTimeline";
@@ -6,6 +6,7 @@ import { ResizableHandle } from "../components/editor/ResizableHandle";
 import { TopBar } from "../components/editor/TopBar";
 import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
+import type { AudioTransportEngine, TransportState } from "../libs/audio/engine";
 import type { MediaFile, MediaTab, TimelineClip, TimelineTrack } from "../types/audio";
 import type { ProjectSummary } from "../types/project";
 import { clamp } from "../utils/math";
@@ -21,6 +22,7 @@ interface EditorPageProps {
   selectedFileId: string;
   selectedTrackId: string;
   tracks: TimelineTrack[];
+  audioEngine: AudioTransportEngine;
   onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
   onChangeTrackGain: (trackId: string, gainDb: number) => void;
   onChangeTrackPan: (trackId: string, pan: number) => void;
@@ -44,6 +46,7 @@ export function EditorPage({
   selectedFileId,
   selectedTrackId,
   tracks,
+  audioEngine,
   onChangeClipTiming,
   onChangeTrackGain,
   onChangeTrackPan,
@@ -64,6 +67,7 @@ export function EditorPage({
     Object.fromEntries(tracks.map((track) => [track.id, 1])),
   );
   const [transportHeight, setTransportHeight] = useState(48);
+  const [transportState, setTransportState] = useState<TransportState>(audioEngine.state);
   const [visibleStartPercent, setVisibleStartPercent] = useState(0);
   const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
   const timelineDurationSeconds = 140;
@@ -76,6 +80,86 @@ export function EditorPage({
     "--track-head-width": `${trackHeadWidth}px`,
     "--transport-height": `${transportHeight}px`,
   } as React.CSSProperties;
+
+  const setTransportPosition = useCallback(
+    (seconds: number) => {
+      const nextSeconds = clamp(seconds, 0, timelineDurationSeconds);
+      audioEngine.seek(nextSeconds);
+      setPlayheadSeconds(nextSeconds);
+    },
+    [audioEngine],
+  );
+
+  const reportAudioError = useCallback((message: string) => {
+    console.error(message);
+  }, []);
+
+  const play = useCallback(() => {
+    void audioEngine.play(playheadSeconds).then((result) => {
+      if (result.isErr()) {
+        reportAudioError(result.error.message);
+        return;
+      }
+
+      setTransportState(audioEngine.state);
+    });
+  }, [audioEngine, playheadSeconds, reportAudioError]);
+
+  const pause = useCallback(() => {
+    void audioEngine.pause().then((result) => {
+      if (result.isErr()) {
+        reportAudioError(result.error.message);
+        return;
+      }
+
+      setPlayheadSeconds(clamp(audioEngine.currentTime(), 0, timelineDurationSeconds));
+      setTransportState(audioEngine.state);
+    });
+  }, [audioEngine, reportAudioError]);
+
+  const stop = useCallback(() => {
+    void audioEngine.stop().then((result) => {
+      if (result.isErr()) {
+        reportAudioError(result.error.message);
+        return;
+      }
+
+      setPlayheadSeconds(0);
+      setTransportState(audioEngine.state);
+    });
+  }, [audioEngine, reportAudioError]);
+
+  useEffect(() => {
+    if (transportState !== "Playing") {
+      return;
+    }
+
+    let animationFrame = 0;
+
+    function syncPlayhead() {
+      const currentTime = clamp(audioEngine.currentTime(), 0, timelineDurationSeconds);
+      setPlayheadSeconds(currentTime);
+
+      if (currentTime >= timelineDurationSeconds) {
+        void audioEngine.stop().then((result) => {
+          if (result.isErr()) {
+            reportAudioError(result.error.message);
+            return;
+          }
+
+          setPlayheadSeconds(0);
+          setTransportState(audioEngine.state);
+        });
+        return;
+      }
+
+      animationFrame = window.requestAnimationFrame(syncPlayhead);
+    }
+
+    animationFrame = window.requestAnimationFrame(syncPlayhead);
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [audioEngine, reportAudioError, transportState]);
 
   return (
     <main className="oa-shell" style={layoutStyle}>
@@ -108,7 +192,7 @@ export function EditorPage({
               clips={clips}
               durationSeconds={timelineDurationSeconds}
               onChangePlayhead={(percent) =>
-                setPlayheadSeconds((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
+                setTransportPosition((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
               }
               onChangeClipTiming={onChangeClipTiming}
               onChangeTrackGain={onChangeTrackGain}
@@ -165,7 +249,17 @@ export function EditorPage({
               setTransportHeight((currentHeight) => clamp(currentHeight - delta, 42, 90))
             }
           />
-          <TransportBar currentTime={formatTransportTime(playheadSeconds)} />
+          <TransportBar
+            currentTime={formatTransportTime(playheadSeconds)}
+            onFastForward={() => setTransportPosition(playheadSeconds + 5)}
+            onPause={pause}
+            onPlay={play}
+            onRewind={() => setTransportPosition(playheadSeconds - 5)}
+            onSeekEnd={() => setTransportPosition(timelineDurationSeconds)}
+            onSeekStart={() => setTransportPosition(0)}
+            onStop={stop}
+            state={transportState}
+          />
         </section>
       </div>
     </main>

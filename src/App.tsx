@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { clips as mockClips, mediaFiles, recentProjects, tracks as mockTracks } from "./data/mockData";
+import { RealtimeTransportEngine } from "./libs/audio/engine";
 import { EditorPage } from "./pages/EditorPage";
 import { HomePage } from "./pages/HomePage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -31,10 +32,22 @@ function App() {
   const [selectedClipId, setSelectedClipId] = useState("clip-mola");
   const [selectedSettingsSection, setSelectedSettingsSection] =
     useState<SettingsSection>("Device");
+  const audioEngine = useMemo(() => new RealtimeTransportEngine(), []);
 
   const selectedProject = useMemo(
     () => recentProjects.find((project) => project.id === selectedProjectId) ?? recentProjects[0],
     [selectedProjectId],
+  );
+
+  useEffect(
+    () => () => {
+      void audioEngine.dispose().then((result) => {
+        if (result.isErr()) {
+          console.error(result.error.message);
+        }
+      });
+    },
+    [audioEngine],
   );
 
   function navigate(view: AppView) {
@@ -130,6 +143,7 @@ function App() {
     return (
       <EditorPage
         activeMediaTab={activeMediaTab}
+        audioEngine={audioEngine}
         clips={clips}
         editorView={activeView}
         files={mediaFiles}

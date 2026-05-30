@@ -1,16 +1,36 @@
+import type { TransportState } from "../../libs/audio/engine";
+
 interface TransportBarProps {
   currentTime: string;
+  state: TransportState;
+  onFastForward: () => void;
+  onPause: () => void;
+  onPlay: () => void;
+  onRewind: () => void;
+  onSeekEnd: () => void;
+  onSeekStart: () => void;
+  onStop: () => void;
 }
 
-export function TransportBar({ currentTime }: TransportBarProps) {
+export function TransportBar({
+  currentTime,
+  state,
+  onFastForward,
+  onPause,
+  onPlay,
+  onRewind,
+  onSeekEnd,
+  onSeekStart,
+  onStop,
+}: TransportBarProps) {
   const controls = [
-    { label: "Stop", icon: "stop" },
-    { label: "Play", icon: "play" },
-    { label: "Pause", icon: "pause" },
-    { label: "Go to start", icon: "skip-start" },
-    { label: "Rewind", icon: "rewind" },
-    { label: "Fast forward", icon: "fast-forward" },
-    { label: "Go to end", icon: "skip-end" },
+    { label: "Stop", icon: "stop", onClick: onStop, pressed: state === "Stopped" },
+    { label: "Play", icon: "play", onClick: onPlay, pressed: state === "Playing" },
+    { label: "Pause", icon: "pause", onClick: onPause, pressed: state === "Paused" },
+    { label: "Go to start", icon: "skip-start", onClick: onSeekStart, pressed: false },
+    { label: "Rewind", icon: "rewind", onClick: onRewind, pressed: false },
+    { label: "Fast forward", icon: "fast-forward", onClick: onFastForward, pressed: false },
+    { label: "Go to end", icon: "skip-end", onClick: onSeekEnd, pressed: false },
   ];
 
   return (
@@ -18,7 +38,13 @@ export function TransportBar({ currentTime }: TransportBarProps) {
       <div className="oa-time-readout">{currentTime}</div>
       <div className="oa-transport">
         {controls.map((control) => (
-          <button aria-label={control.label} key={control.icon} type="button">
+          <button
+            aria-label={control.label}
+            aria-pressed={control.pressed}
+            key={control.icon}
+            onClick={control.onClick}
+            type="button"
+          >
             <span className={`oa-transport-icon ${control.icon}`} />
           </button>
         ))}
