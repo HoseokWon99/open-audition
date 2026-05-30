@@ -6,101 +6,49 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { WaveformCanvas } from "./WaveformCanvas";
 import type { MediaFile } from "../../types/audio";
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
-
-type WaveSurferEvent = "ready" | "error" | "play" | "pause" | "finish" | "timeupdate" | "destroy";
+type WaveSurferEvent = "ready" | "error" | "play" | "pause" | "finish" | "timeupdate";
 type WaveSurferHandler = (...args: unknown[]) => void;
 
-const { MockWaveSurfer } = vi.hoisted(() => {
-  class MockWaveSurfer {
-    static instances: MockWaveSurfer[] = [];
+class MockWaveSurfer {
+  static instances: MockWaveSurfer[] = [];
 
-    readonly destroy = vi.fn();
-    readonly pause = vi.fn();
-    readonly play = vi.fn(() => Promise.resolve());
-    readonly setTime = vi.fn();
-    readonly stop = vi.fn();
-    private currentTime = 0;
-    private readonly handlers = new Map<WaveSurferEvent, WaveSurferHandler[]>();
+  readonly destroy = vi.fn();
+  readonly load = vi.fn(() => Promise.resolve());
+  readonly pause = vi.fn();
+  readonly play = vi.fn(() => Promise.resolve());
+  readonly setTime = vi.fn();
+  readonly stop = vi.fn();
+  private readonly handlers = new Map<WaveSurferEvent, WaveSurferHandler[]>();
 
-    constructor() {
-      MockWaveSurfer.instances.push(this);
-    }
-
-    on(event: WaveSurferEvent, handler: WaveSurferHandler) {
-      const eventHandlers = this.handlers.get(event) ?? [];
-      eventHandlers.push(handler);
-      this.handlers.set(event, eventHandlers);
-
-      return () => {
-        this.handlers.set(
-          event,
-          (this.handlers.get(event) ?? []).filter((candidate) => candidate !== handler),
-        );
-      };
-    }
-
-    emit(event: WaveSurferEvent, ...args: unknown[]) {
-      if (event === "timeupdate" && typeof args[0] === "number") {
-        this.currentTime = args[0];
-      }
-
-      for (const handler of this.handlers.get(event) ?? []) {
-        handler(...args);
-      }
-    }
-
-    getCurrentTime() {
-      return this.currentTime;
-    }
+  constructor() {
+    MockWaveSurfer.instances.push(this);
   }
 
-  return { MockWaveSurfer };
-});
+  on(event: WaveSurferEvent, handler: WaveSurferHandler) {
+    const eventHandlers = this.handlers.get(event) ?? [];
+    eventHandlers.push(handler);
+    this.handlers.set(event, eventHandlers);
 
-vi.mock("@wavesurfer/react", async () => {
-  const React = await vi.importActual<typeof import("react")>("react");
+    return () => {
+      this.handlers.set(
+        event,
+        (this.handlers.get(event) ?? []).filter((candidate) => candidate !== handler),
+      );
+    };
+  }
 
-  return {
-    useWavesurfer(options: { container: React.RefObject<HTMLDivElement | null> }) {
-      const [wavesurfer, setWavesurfer] =
-        React.useState<InstanceType<typeof MockWaveSurfer> | null>(null);
-      const [isReady, setIsReady] = React.useState(false);
-      const [isPlaying, setIsPlaying] = React.useState(false);
-      const [currentTime, setCurrentTime] = React.useState(0);
+  emit(event: WaveSurferEvent, ...args: unknown[]) {
+    for (const handler of this.handlers.get(event) ?? []) {
+      handler(...args);
+    }
+  }
+}
 
-      React.useEffect(() => {
-        if (!options.container.current) {
-          return;
-        }
-
-        const instance = new MockWaveSurfer();
-        const unsubscribers = [
-          instance.on("ready", () => setIsReady(true)),
-          instance.on("play", () => setIsPlaying(true)),
-          instance.on("pause", () => setIsPlaying(false)),
-          instance.on("finish", () => setIsPlaying(false)),
-          instance.on("timeupdate", () => setCurrentTime(instance.getCurrentTime())),
-          instance.on("destroy", () => {
-            setIsReady(false);
-            setIsPlaying(false);
-          }),
-        ];
-
-        setWavesurfer(instance);
-
-        return () => {
-          unsubscribers.forEach((unsubscribe) => unsubscribe());
-          instance.destroy();
-          setWavesurfer(null);
-        };
-      }, [options]);
-
-      return { currentTime, isPlaying, isReady, wavesurfer };
-    },
-  };
-});
+vi.mock("wavesurfer.js", () => ({
+  default: {
+    create: vi.fn(() => new MockWaveSurfer()),
+  },
+}));
 
 const file: MediaFile = {
   id: "mola",
