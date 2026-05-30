@@ -27,11 +27,7 @@ export function ClipWaveformPreview({ file }: ClipWaveformPreviewProps) {
               key={index}
               style={{
                 "--bar-height": `${Math.round(
-                  clamp(
-                    height * (channelIndex === 0 ? 0.82 + Math.sin(index * 0.13) * 0.16 : 0.74 + Math.cos(index * 0.17) * 0.18),
-                    0.05,
-                    0.88,
-                  ) * 24,
+                  clamp(height, 0.05, 0.88) * 24,
                 )}px`,
               } as React.CSSProperties}
             />

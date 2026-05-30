@@ -1055,11 +1055,10 @@ button {
 
 .oa-clip-waveform {
   position: absolute;
-  inset: 28px 0 0;
+  inset: 0;
   z-index: 1;
   display: grid;
   grid-template-rows: 1fr 1fr;
-  gap: 1px;
   opacity: 0.86;
   pointer-events: none;
 }
@@ -1076,12 +1075,12 @@ button {
 
 .oa-clip-waveform-channel:first-child {
   align-items: flex-end;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
 }
 
 .oa-clip-waveform-channel:last-child {
   align-items: flex-start;
-  padding-top: 16px;
+  padding-top: 14px;
 }
 
 .oa-clip-waveform-bar {
