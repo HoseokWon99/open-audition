@@ -7,6 +7,12 @@ import { ClipWaveformPreview } from "./ClipWaveformPreview";
 import type { MediaFile, TimelineClip, TimelineTrack } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
+interface ClipLevelKeyframe {
+  id: string;
+  xPercent: number;
+  yPercent: number;
+}
+
 interface MultitrackTimelineProps {
   clips: TimelineClip[];
   durationSeconds: number;
@@ -59,6 +65,9 @@ export function MultitrackTimeline({
   const lanesRef = useRef<HTMLDivElement>(null);
   const laneContentRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
+  const [clipLevelKeyframes, setClipLevelKeyframes] = useState<Record<string, ClipLevelKeyframe[]>>(
+    {},
+  );
   const [timelineScrollLeft, setTimelineScrollLeft] = useState(0);
 
   function percentFromPointer(event: MouseEvent | React.MouseEvent<HTMLElement>) {
@@ -137,6 +146,30 @@ export function MultitrackTimeline({
 
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", stopDrag);
+  }
+
+  function addClipLevelKeyframe(event: React.MouseEvent<SVGSVGElement>, clip: TimelineClip) {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectClip(clip.id);
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const xPercent = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
+    const yPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
+    const keyframeId = `${clip.id}-${Math.round(xPercent * 100)}-${Math.round(yPercent * 100)}`;
+
+    setClipLevelKeyframes((currentKeyframes) => {
+      const existingKeyframes = currentKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+      const nextKeyframes = existingKeyframes
+        .filter((keyframe) => Math.abs(keyframe.xPercent - xPercent) > 1.25)
+        .concat({ id: keyframeId, xPercent, yPercent })
+        .sort((left, right) => left.xPercent - right.xPercent);
+
+      return {
+        ...currentKeyframes,
+        [clip.id]: nextKeyframes,
+      };
+    });
   }
 
   function nudgePlayhead(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -344,7 +377,10 @@ export function MultitrackTimeline({
                     }}
                     onClick={() => onSelectTrack(track.id)}
                   >
-                    {trackClips.map((clip) => (
+                    {trackClips.map((clip) => {
+                      const levelKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+
+                      return (
                       <button
                         className={`oa-clip ${clip.id === selectedClipId ? "is-selected" : ""}`}
                         key={clip.id}
@@ -371,13 +407,41 @@ export function MultitrackTimeline({
                         />
                         <span className="oa-clip-name">{clip.name}</span>
                         <ClipWaveformPreview file={getClipFile(clip)} />
+                        <svg
+                          aria-hidden="true"
+                          className="oa-clip-level"
+                          onClick={(event) => addClipLevelKeyframe(event, clip)}
+                          onMouseDown={(event) => event.stopPropagation()}
+                          preserveAspectRatio="none"
+                          viewBox="0 0 100 100"
+                        >
+                          <rect className="oa-clip-level-hitbox" height="100" width="100" />
+                          <polyline
+                            className="oa-clip-level-line"
+                            points={levelKeyframes
+                              .map((keyframe) => `${keyframe.xPercent},${keyframe.yPercent}`)
+                              .join(" ")}
+                          />
+                          {levelKeyframes.map((keyframe) => (
+                            <rect
+                              className="oa-clip-level-keyframe"
+                              height="3.8"
+                              key={keyframe.id}
+                              transform={`rotate(45 ${keyframe.xPercent} ${keyframe.yPercent})`}
+                              width="3.8"
+                              x={keyframe.xPercent - 1.9}
+                              y={keyframe.yPercent - 1.9}
+                            />
+                          ))}
+                        </svg>
                         <span
                           aria-hidden="true"
                           className="oa-clip-trim end"
                           onMouseDown={(event) => startClipTrimDrag(event, clip, "End")}
                         />
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                   {index < tracks.length - 1 ? (
                     <ResizableHandle
@@ -394,4 +458,11 @@ export function MultitrackTimeline({
       </div>
     </div>
   );
+}
+
+function defaultClipLevelKeyframes(): ClipLevelKeyframe[] {
+  return [
+    { id: "start", xPercent: 0, yPercent: 50 },
+    { id: "end", xPercent: 100, yPercent: 50 },
+  ];
 }

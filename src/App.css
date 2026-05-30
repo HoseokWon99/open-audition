@@ -982,7 +982,7 @@ button {
   left: 10px;
   top: 6px;
   right: 10px;
-  z-index: 3;
+  z-index: 5;
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -1016,7 +1016,7 @@ button {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 3;
+  z-index: 6;
   width: 10px;
   cursor: ew-resize;
   touch-action: none;
@@ -1091,6 +1091,38 @@ button {
   border-radius: 999px;
   background: color-mix(in srgb, var(--clip-color) 82%, #00d99c);
   box-shadow: 0 0 8px color-mix(in srgb, var(--clip-color) 32%, transparent);
+}
+
+.oa-clip-level {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.oa-clip-level-hitbox {
+  fill: transparent;
+}
+
+.oa-clip-level-line {
+  fill: none;
+  stroke: #fff2a3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.55));
+}
+
+.oa-clip-level-keyframe {
+  fill: #9aa19b;
+  stroke: #d8e3d2;
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.62));
 }
 
 .oa-bottom {
