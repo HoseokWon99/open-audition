@@ -944,11 +944,29 @@ button {
   bottom: 0;
   padding: 8px 12px;
   border-left: 2px solid color-mix(in srgb, var(--clip-color) 68%, #ffffff);
-  background: color-mix(in srgb, var(--clip-color) 34%, #202020);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--clip-color) 28%, #151515) 0%,
+      color-mix(in srgb, var(--clip-color) 20%, #111111) 100%
+    );
   color: #d8e8dd;
   font-size: 12px;
   text-align: left;
   overflow: hidden;
+}
+
+.oa-clip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  z-index: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--clip-color) 46%, #e9f9f2);
+  opacity: 0.62;
+  pointer-events: none;
 }
 
 .oa-clip-name {
@@ -1026,13 +1044,44 @@ button {
 
 .oa-clip-waveform {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 8px;
-  display: block;
-  height: 28px;
-  opacity: 0.78;
+  inset: 28px 0 0;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  opacity: 0.86;
   pointer-events: none;
+}
+
+.oa-clip-waveform-channel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 12px;
+  border-top: 1px solid color-mix(in srgb, var(--clip-color) 26%, transparent);
+  overflow: hidden;
+}
+
+.oa-clip-waveform-channel:first-child {
+  align-items: flex-end;
+  padding-bottom: 10px;
+}
+
+.oa-clip-waveform-channel:last-child {
+  align-items: flex-start;
+  padding-top: 10px;
+}
+
+.oa-clip-waveform-bar {
+  flex: 1 0 2px;
+  max-width: 8px;
+  height: var(--bar-height);
+  min-height: 1px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--clip-color) 82%, #00d99c);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clip-color) 32%, transparent);
 }
 
 .oa-bottom {
