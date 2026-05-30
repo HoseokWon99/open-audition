@@ -942,7 +942,7 @@ button {
   position: absolute;
   top: 0;
   bottom: 0;
-  padding: 8px 12px;
+  padding: 0;
   border-left: 2px solid color-mix(in srgb, var(--clip-color) 68%, #ffffff);
   background:
     linear-gradient(
@@ -978,8 +978,11 @@ button {
 }
 
 .oa-clip-name {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  left: 10px;
+  top: 6px;
+  right: 10px;
+  z-index: 3;
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -1073,12 +1076,12 @@ button {
 
 .oa-clip-waveform-channel:first-child {
   align-items: flex-end;
-  padding-bottom: 10px;
+  padding-bottom: 16px;
 }
 
 .oa-clip-waveform-channel:last-child {
   align-items: flex-start;
-  padding-top: 10px;
+  padding-top: 16px;
 }
 
 .oa-clip-waveform-bar {

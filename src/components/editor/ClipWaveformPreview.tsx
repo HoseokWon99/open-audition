@@ -31,7 +31,7 @@ export function ClipWaveformPreview({ file }: ClipWaveformPreviewProps) {
                     height * (channelIndex === 0 ? 0.82 + Math.sin(index * 0.13) * 0.16 : 0.74 + Math.cos(index * 0.17) * 0.18),
                     0.05,
                     0.88,
-                  ) * 32,
+                  ) * 24,
                 )}px`,
               } as React.CSSProperties}
             />
