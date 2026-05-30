@@ -1489,11 +1489,18 @@ button {
   background: #00d99c;
 }
 
+.oa-wavesurfer-waveform {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-width: 0;
+}
+
 .oa-wave-selection {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 2;
   left: calc(var(--selection-start) * 1%);
   width: calc(var(--selection-width) * 1%);
   border-left: 1px solid #edf0f8;

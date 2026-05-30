@@ -73,6 +73,7 @@ export function EditorPage({
   const timelineDurationSeconds = 140;
   const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
   const zoomLevel = clamp(Math.round((100 - visibleWidthPercent) / 15), 0, 5);
+  const selectedFile = files.find((file) => file.id === selectedFileId);
 
   const layoutStyle = {
     "--left-dock-width": `${leftDockWidth}px`,
@@ -240,7 +241,7 @@ export function EditorPage({
               zoomLevel={zoomLevel}
             />
           ) : (
-            <WaveformCanvas />
+            <WaveformCanvas file={selectedFile} />
           )}
           <ResizableHandle
             axis="Y"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createWaveformSelection } from "./waveformSelection";
+import { createWaveformSelection } from "./useWaveformSelection";
 
 describe("createWaveformSelection", () => {
   it("normalizes forward and reverse drag percentages", () => {

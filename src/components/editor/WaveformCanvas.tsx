@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import type React from "react";
 import { TimelineRuler } from "./TimelineRuler";
-import { createWaveformSelection } from "./waveformSelection";
-import type { WaveformSelection } from "./waveformSelection";
+import { useWaveformSelection } from "../../hooks/useWaveformSelection";
+import { useWaveformViewport } from "../../hooks/useWaveformViewport";
+import { useWaveSurferRenderer } from "../../hooks/useWaveSurferRenderer";
+import type { MediaFile } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
 const bars = Array.from({ length: 180 }, (_, index) => {
@@ -12,234 +12,44 @@ const bars = Array.from({ length: 180 }, (_, index) => {
   return clamp(rise * fall * variance, 0.08, 1);
 });
 
-type SelectionSubmenu = "Effects" | "InsertIntoMultitrack";
+const fallbackWaveformPeaks = [
+  bars,
+  bars.map((height, index) => clamp(height * (0.88 + Math.sin(index * 0.21) * 0.12), 0.08, 1)),
+];
 
-export function WaveformCanvas() {
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [playheadPercent, setPlayheadPercent] = useState(52);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [selection, setSelection] = useState<WaveformSelection | null>(null);
-  const [activeSubmenu, setActiveSubmenu] = useState<SelectionSubmenu | null>(null);
-  const [collapsedSubmenu, setCollapsedSubmenu] = useState<SelectionSubmenu | null>(null);
-  const [selectionMenu, setSelectionMenu] = useState<{ x: number; y: number } | null>(null);
-  const [visibleStartPercent, setVisibleStartPercent] = useState(0);
-  const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
-  const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
+interface WaveformCanvasProps {
+  file?: MediaFile;
+}
 
-  function changeVisibleWindow(startPercent: number, widthPercent: number) {
-    const nextWidthPercent = clamp(widthPercent, 10, 100);
-    const nextStartPercent = clamp(startPercent, 0, 100 - nextWidthPercent);
-
-    setVisibleWidthPercent(nextWidthPercent);
-    setVisibleStartPercent(nextStartPercent);
-  }
-
-  function contentPercentFromPointer(event: MouseEvent | React.MouseEvent<HTMLElement>) {
-    const rect = contentRef.current?.getBoundingClientRect();
-
-    if (!rect) {
-      return playheadPercent;
-    }
-
-    return clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
-  }
-
-  function overviewPercentFromPointer(event: MouseEvent | React.MouseEvent<HTMLElement>) {
-    const rect = overviewRef.current?.getBoundingClientRect();
-
-    if (!rect) {
-      return visibleStartPercent;
-    }
-
-    return clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
-  }
-
-  function startPlayheadDrag(event: React.MouseEvent<HTMLElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    setPlayheadPercent(contentPercentFromPointer(event));
-
-    function handleMove(moveEvent: MouseEvent) {
-      setPlayheadPercent(contentPercentFromPointer(moveEvent));
-    }
-
-    function stopDrag() {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", stopDrag);
-    }
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", stopDrag);
-  }
-
-  function startSelectionDrag(event: React.MouseEvent<HTMLElement>) {
-    if (event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    setSelectionMenu(null);
-    setActiveSubmenu(null);
-    setCollapsedSubmenu(null);
-
-    const anchorPercent = contentPercentFromPointer(event);
-    setSelection(null);
-
-    function handleMove(moveEvent: MouseEvent) {
-      setSelection(createWaveformSelection(anchorPercent, contentPercentFromPointer(moveEvent)));
-    }
-
-    function stopDrag(upEvent: MouseEvent) {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", stopDrag);
-
-      const nextSelection = createWaveformSelection(anchorPercent, contentPercentFromPointer(upEvent));
-
-      if (!nextSelection) {
-        setPlayheadPercent(contentPercentFromPointer(upEvent));
-      }
-
-      setSelection(nextSelection);
-    }
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", stopDrag);
-  }
-
-  function openSelectionMenu(event: React.MouseEvent<HTMLElement>) {
-    event.preventDefault();
-
-    if (!selection) {
-      setSelectionMenu(null);
-      return;
-    }
-
-    const pointerPercent = contentPercentFromPointer(event);
-
-    if (pointerPercent < selection.startPercent || pointerPercent > selection.endPercent) {
-      setSelectionMenu(null);
-      return;
-    }
-
-    setSelectionMenu({ x: event.clientX, y: event.clientY });
-    setActiveSubmenu(null);
-    setCollapsedSubmenu(null);
-  }
-
-  function openSubmenu(name: SelectionSubmenu) {
-    if (collapsedSubmenu !== name) {
-      setActiveSubmenu(name);
-    }
-  }
-
-  function closeSubmenu(name: SelectionSubmenu) {
-    setActiveSubmenu((currentSubmenu) => (currentSubmenu === name ? null : currentSubmenu));
-    setCollapsedSubmenu((currentSubmenu) => (currentSubmenu === name ? null : currentSubmenu));
-  }
-
-  function collapseSubmenu(name: SelectionSubmenu) {
-    setActiveSubmenu((currentSubmenu) => (currentSubmenu === name ? null : currentSubmenu));
-    setCollapsedSubmenu(name);
-  }
-
-  function startOverviewDrag(
-    event: React.MouseEvent<HTMLElement>,
-    mode: "Move" | "Start" | "End",
-  ) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const initialPointerPercent = overviewPercentFromPointer(event);
-    const initialStartPercent = visibleStartPercent;
-    const initialWidthPercent = visibleWidthPercent;
-
-    function handleMove(moveEvent: MouseEvent) {
-      const deltaPercent = overviewPercentFromPointer(moveEvent) - initialPointerPercent;
-
-      if (mode === "Move") {
-        changeVisibleWindow(initialStartPercent + deltaPercent, initialWidthPercent);
-        return;
-      }
-
-      if (mode === "Start") {
-        const nextStartPercent = Math.min(
-          initialStartPercent + initialWidthPercent - 10,
-          initialStartPercent + deltaPercent,
-        );
-        changeVisibleWindow(
-          nextStartPercent,
-          initialWidthPercent + initialStartPercent - nextStartPercent,
-        );
-        return;
-      }
-
-      changeVisibleWindow(initialStartPercent, initialWidthPercent + deltaPercent);
-    }
-
-    function stopDrag() {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", stopDrag);
-    }
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", stopDrag);
-  }
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    const contentWidth = viewport.clientWidth * (timelineWidthPercent / 100);
-    const maxScrollLeft = contentWidth - viewport.clientWidth;
-    const maxStartPercent = 100 - visibleWidthPercent;
-    const nextScrollLeft =
-      maxStartPercent <= 0 ? 0 : (visibleStartPercent / maxStartPercent) * maxScrollLeft;
-
-    setScrollLeft(nextScrollLeft);
-  }, [timelineWidthPercent, visibleStartPercent, visibleWidthPercent]);
-
-  useEffect(() => {
-    function closeMenu() {
-      setSelectionMenu(null);
-      setActiveSubmenu(null);
-      setCollapsedSubmenu(null);
-    }
-
-    function closeMenuWithEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        closeMenu();
-      }
-    }
-
-    window.addEventListener("click", closeMenu);
-    window.addEventListener("keydown", closeMenuWithEscape);
-
-    return () => {
-      window.removeEventListener("click", closeMenu);
-      window.removeEventListener("keydown", closeMenuWithEscape);
-    };
-  }, []);
-
-  const overviewStyle = {
-    "--overview-start": visibleStartPercent,
-    "--overview-width": visibleWidthPercent,
-  } as React.CSSProperties;
-  const contentStyle = {
-    transform: `translateX(-${scrollLeft}px)`,
-    width: `${timelineWidthPercent}%`,
-  };
-  const selectionStyle = selection
-    ? ({
-        "--selection-start": selection.startPercent,
-        "--selection-width": selection.endPercent - selection.startPercent,
-        "--selection-center": (selection.startPercent + selection.endPercent) / 2,
-      } as React.CSSProperties)
-    : undefined;
+export function WaveformCanvas({ file }: WaveformCanvasProps) {
+  const waveformRef = useWaveSurferRenderer(file, fallbackWaveformPeaks);
+  const {
+    contentStyle,
+    changeVisibleWindow,
+    overviewRef,
+    overviewStyle,
+    overviewPercentFromPointer,
+    scrollLeft,
+    startOverviewDrag,
+    timelineWidthPercent,
+    viewportRef,
+    visibleWidthPercent,
+  } = useWaveformViewport();
+  const {
+    activeSubmenu,
+    closeSubmenu,
+    collapseSubmenu,
+    collapsedSubmenu,
+    contentRef,
+    openSelectionMenu,
+    openSubmenu,
+    playheadPercent,
+    selection,
+    selectionMenu,
+    selectionStyle,
+    startPlayheadDrag,
+    startSelectionDrag,
+  } = useWaveformSelection();
 
   return (
     <div className="oa-waveform-editor">
@@ -306,17 +116,7 @@ export function WaveformCanvas() {
           <div className="oa-floating-gain" style={selectionStyle}>
             ▥ ◯ +0 dB ↗
           </div>
-          <div className="oa-wave-channel">
-            {bars.map((height, index) => (
-              <span key={index} style={{ height: `${12 + height * 92}%` }} />
-            ))}
-          </div>
-          <div className="oa-channel-divider" />
-          <div className="oa-wave-channel bottom">
-            {bars.map((height, index) => (
-              <span key={index} style={{ height: `${16 + height * 104}%` }} />
-            ))}
-          </div>
+          <div aria-label="Rendered waveform" className="oa-wavesurfer-waveform" ref={waveformRef} />
           <div className="oa-db-scale">
             <span>dB</span>
             <span>-3</span>
