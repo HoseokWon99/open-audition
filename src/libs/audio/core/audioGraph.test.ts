@@ -18,9 +18,9 @@ describe("AudioGraph", () => {
     expect(graph.connect(source, gain).isOk()).toBe(true);
     expect(graph.connect(gain, destination).isOk()).toBe(true);
 
-    expect(graph.successors(source)._unsafeUnwrap()).toEqual([gain]);
-    expect(graph.predecessors(destination)._unsafeUnwrap()).toEqual([gain]);
-    expect(graph.edges()._unsafeUnwrap()).toEqual([
+    expect(graph.successors(source)).toEqual([gain]);
+    expect(graph.predecessors(destination)).toEqual([gain]);
+    expect(graph.edges()).toEqual([
       [source, gain],
       [gain, destination],
     ]);
@@ -39,9 +39,9 @@ describe("AudioGraph", () => {
 
     expect(graph.removeNode(gain).isOk()).toBe(true);
 
-    expect(graph.successors(source)._unsafeUnwrap()).toEqual([]);
-    expect(graph.predecessors(destination)._unsafeUnwrap()).toEqual([]);
-    expect(graph.edges()._unsafeUnwrap()).toEqual([]);
+    expect(graph.successors(source)).toEqual([]);
+    expect(graph.predecessors(destination)).toEqual([]);
+    expect(graph.edges()).toEqual([]);
   });
 
   it("disconnects audio nodes when an edge is disconnected", () => {
@@ -60,8 +60,8 @@ describe("AudioGraph", () => {
     const graph = new AudioGraph();
     const source = createFakeAudioNode();
 
-    expect(graph.successors(source)._unsafeUnwrap()).toEqual([]);
-    expect(graph.predecessors(source)._unsafeUnwrap()).toEqual([]);
+    expect(graph.successors(source)).toEqual([]);
+    expect(graph.predecessors(source)).toEqual([]);
   });
 
   it("disconnects all edges while keeping nodes registered", () => {

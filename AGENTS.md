@@ -53,10 +53,13 @@
 - Use pascal case for higher order function
 - Order in typescript file: import phrases -> constant -> internal type&interface&class -> exported class&function -> internal function
 - Order in class: properties -> constructor -> static method -> getter/setter (if needed) -> public method -> private method
+- Prefer functional programming patterns when they improve clarity: pure functions, immutable data flow, composable transforms, and focused higher-order helpers.
+- Prefer lazy evaluation for expensive or optional work, especially audio processing, derived state, XML parsing, waveform analysis, and UI selectors.
 - Avoid throwing errors for recoverable failures; return `Result` / `ResultAsync` from `neverthrow` with `OpenAuditionError` instead.
 
 ## Rules
 
+- Do not use `Result` / `ResultAsync` when there is no possible error cause; return the plain value instead.
 
 ## References
 

@@ -28,7 +28,7 @@ export function createAudioChain(options: AudioChainOptions): Result<AudioChain,
 
 class ManagedAudioChain implements AudioChain {
   private effects: AudioEffect[] = [];
-  private internalEdges: Array<[AudioNode, AudioNode]> = [];
+  private internalEdges: [AudioNode, AudioNode][] = [];
   private readonly externalConnections = new Set<AudioNode>();
 
   constructor(
@@ -103,45 +103,31 @@ class ManagedAudioChain implements AudioChain {
   }
 
   private rebuildInternalConnections(): Result<void, OpenAuditionError> {
-    const activeEffects = this.effects.filter((effect) => !effect.bypassed);
-    let previousNode = this.input;
+    let prevNode = this.input;
 
-    for (const effect of activeEffects) {
-      const connectResult = this.connectInternalEdge(previousNode, effect.input);
-
-      if (connectResult.isErr()) {
-        return err(connectResult.error);
-      }
-
-      previousNode = effect.output;
+    for (const effect of this.effects) {
+      const r = this.connectInternalEdge(prevNode, effect.input)
+      if (r.isErr()) return err(r.error);
+      prevNode = effect.output;
     }
 
-    return this.connectInternalEdge(previousNode, this.output);
+    return this.connectInternalEdge(prevNode, this.output);
   }
 
   private connectInternalEdge(from: AudioNode, to: AudioNode): Result<void, OpenAuditionError> {
-    const connectResult = this.manager.connect(from, to);
-
-    if (connectResult.isErr()) {
-      return err(connectResult.error);
-    }
-
+    const result = this.manager.connect(from, to);
+    if (result.isErr()) return err(result.error);
     this.internalEdges.push([from, to]);
-
     return ok(undefined);
   }
 
   private disconnectInternalConnections(): Result<void, OpenAuditionError> {
     for (const [from, to] of this.internalEdges) {
-      const disconnectResult = this.manager.disconnect(from, to);
-
-      if (disconnectResult.isErr()) {
-        return err(disconnectResult.error);
-      }
+      const r = this.manager.disconnect(from, to);
+      if (r.isErr()) return err(r.error);
     }
 
     this.internalEdges = [];
-
     return ok(undefined);
   }
 }

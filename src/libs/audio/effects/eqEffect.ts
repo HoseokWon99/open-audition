@@ -22,7 +22,6 @@ export interface EqEffect extends AudioEffect {
 interface EqEffectOptions {
   context: BaseAudioContext;
   id: string;
-  bypassed: boolean;
   lowGainDb: number;
   midGainDb: number;
   highGainDb: number;
@@ -59,7 +58,6 @@ export function createEqEffect(options: EqEffectOptions): EqEffect {
     lowShelf,
     midPeak,
     highShelf,
-    bypassed: options.bypassed,
     activate: (manager) => activateEqEffect(manager, input, output, lowShelf, midPeak, highShelf),
   };
 }

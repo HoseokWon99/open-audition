@@ -15,7 +15,6 @@ export interface GainEffect extends AudioEffect {
 interface GainEffectOptions {
   context: BaseAudioContext;
   id: string;
-  bypassed: boolean;
   gainDb: number;
 }
 
@@ -30,7 +29,6 @@ export function createGainEffect(options: GainEffectOptions): GainEffect {
     input: gain,
     output: gain,
     gain,
-    bypassed: options.bypassed,
     activate: (manager) => activateGainEffect(manager, gain),
   };
 }

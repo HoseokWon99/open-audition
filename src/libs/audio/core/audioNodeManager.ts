@@ -60,29 +60,25 @@ export class AudioNodeManager {
   isolate(node: AudioNode): Result<void, OpenAuditionError> {
     return this.ensureUsable()
       .andThen(() => this.ensureRegistered(node))
-      .andThen(() =>
-        this.graph.predecessors(node).andThen((predecessors) =>
-          this.graph.successors(node).andThen((successors) => {
-            for (const predecessor of predecessors) {
-              const disconnectResult = this.disconnect(predecessor, node);
+      .andThen(() => {
+        for (const predecessor of this.graph.predecessors(node)) {
+          const disconnectResult = this.disconnect(predecessor, node);
 
-              if (disconnectResult.isErr()) {
-                return err(disconnectResult.error);
-              }
-            }
+          if (disconnectResult.isErr()) {
+            return err(disconnectResult.error);
+          }
+        }
 
-            for (const successor of successors) {
-              const disconnectResult = this.disconnect(node, successor);
+        for (const successor of this.graph.successors(node)) {
+          const disconnectResult = this.disconnect(node, successor);
 
-              if (disconnectResult.isErr()) {
-                return err(disconnectResult.error);
-              }
-            }
+          if (disconnectResult.isErr()) {
+            return err(disconnectResult.error);
+          }
+        }
 
-            return ok(undefined);
-          }),
-        ),
-      );
+        return ok(undefined);
+      });
   }
 
   disconnectAll(): Result<void, OpenAuditionError> {

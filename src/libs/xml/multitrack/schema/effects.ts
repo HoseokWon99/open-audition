@@ -1,11 +1,6 @@
 import { z } from "zod";
 import { effectParamTypeSchema, effectTypeSchema } from "./enums";
-import {
-  arrayOf,
-  booleanStringSchema,
-  decimalStringSchema,
-  integerStringSchema,
-} from "./primitives";
+import { arrayOf, booleanStringSchema, decimalStringSchema, integerStringSchema } from "./primitives";
 
 export const effectParamSchema = z
   .object({
@@ -67,13 +62,11 @@ export const effectSchema = z
   .object({
     "@_index": integerStringSchema,
     "@_type": effectTypeSchema,
-    "@_enabled": booleanStringSchema,
     param: arrayOf(effectParamSchema),
   })
   .transform((effect) => ({
     index: effect["@_index"],
     type: effect["@_type"],
-    enabled: effect["@_enabled"],
     params: effect.param,
   }));
 

@@ -43,7 +43,6 @@ describe("EqEffect", () => {
     const effect = createEqEffect({
       context,
       id: "eq-1",
-      bypassed: false,
       lowGainDb: -3,
       midGainDb: 4,
       highGainDb: 2,
@@ -74,7 +73,6 @@ describe("EqEffect", () => {
     const effect = createEqEffect({
       context,
       id: "eq-1",
-      bypassed: false,
       lowGainDb: 0,
       midGainDb: 0,
       highGainDb: 0,

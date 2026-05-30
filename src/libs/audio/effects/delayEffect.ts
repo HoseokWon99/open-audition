@@ -19,7 +19,6 @@ export interface DelayEffect extends AudioEffect {
 interface DelayEffectOptions {
   context: BaseAudioContext;
   id: string;
-  bypassed: boolean;
   delaySeconds: number;
   feedback: number;
   mix: number;
@@ -47,7 +46,6 @@ export function createDelayEffect(options: DelayEffectOptions): DelayEffect {
     wetGain,
     delay,
     feedback,
-    bypassed: options.bypassed,
     activate: (manager) => activateDelayEffect(manager, input, output, dryGain, wetGain, delay, feedback),
   };
 }

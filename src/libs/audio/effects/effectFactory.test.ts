@@ -58,7 +58,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 0,
       type: "Gain",
-      enabled: true,
       params: [{ name: "gainDb", type: "Number", value: 3 }],
     };
 
@@ -73,7 +72,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 4,
       type: "Eq",
-      enabled: true,
       params: [
         { name: "lowGainDb", type: "Number", value: -2 },
         { name: "midGainDb", type: "Number", value: 1 },
@@ -92,7 +90,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 5,
       type: "Filter",
-      enabled: true,
       params: [
         { name: "filterType", type: "String", value: "HighPass" },
         { name: "frequencyHz", type: "Number", value: 120 },
@@ -111,7 +108,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 0,
       type: "Delay",
-      enabled: true,
       params: [
         { name: "delaySeconds", type: "Number", value: 0.35 },
         { name: "feedback", type: "Number", value: 0.45 },
@@ -124,22 +120,6 @@ describe("createRuntimeEffect", () => {
     expect(result.isOk()).toBe(true);
     const runtimeEffect = result._unsafeUnwrap();
     expect(runtimeEffect.id).toBe("effect-0-delay");
-    expect(runtimeEffect.bypassed).toBe(false);
-  });
-
-  it("maps disabled serializable effects to bypassed runtime effects", () => {
-    const context = createFakeContext();
-    const effect: Effect = {
-      index: 2,
-      type: "Delay",
-      enabled: false,
-      params: [],
-    };
-
-    const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
-
-    expect(result.isOk()).toBe(true);
-    expect(result._unsafeUnwrap().bypassed).toBe(true);
   });
 
   it("creates a reverb effect when the impulse response exists", () => {
@@ -148,7 +128,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 1,
       type: "Reverb",
-      enabled: true,
       params: [
         { name: "impulseId", type: "String", value: "small-hall" },
         { name: "mix", type: "Number", value: 0.2 },
@@ -170,7 +149,6 @@ describe("createRuntimeEffect", () => {
     const effect: Effect = {
       index: 1,
       type: "Reverb",
-      enabled: true,
       params: [{ name: "impulseId", type: "String", value: "missing-room" }],
     };
 
@@ -188,7 +166,6 @@ describe("createRuntimeEffect", () => {
       const effect: Effect = {
         index: 3,
         type,
-        enabled: true,
         params: [],
       };
 

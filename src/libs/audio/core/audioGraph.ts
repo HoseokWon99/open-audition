@@ -8,21 +8,9 @@ export class AudioGraph {
   private readonly incoming = new Map<AudioNode, Set<AudioNode>>();
 
   removeNode(node: AudioNode): Result<void, OpenAuditionError> {
-    const predecessorsResult = this.predecessors(node);
-
-    if (predecessorsResult.isErr()) {
-      return err(predecessorsResult.error);
-    }
-
-    const successorsResult = this.successors(node);
-
-    if (successorsResult.isErr()) {
-      return err(successorsResult.error);
-    }
-
     const edges: AudioEdge[] = [
-      ...predecessorsResult.value.map((predecessor): AudioEdge => [predecessor, node]),
-      ...successorsResult.value.map((successor): AudioEdge => [node, successor]),
+      ...this.predecessors(node).map((predecessor): AudioEdge => [predecessor, node]),
+      ...this.successors(node).map((successor): AudioEdge => [node, successor]),
     ];
 
     for (const [from, to] of edges) {
@@ -90,19 +78,17 @@ export class AudioGraph {
     return ok(undefined);
   }
 
-  successors(node: AudioNode): Result<AudioNode[], OpenAuditionError> {
-    return ok([...(this.outgoing.get(node) ?? [])]);
+  successors(node: AudioNode): AudioNode[] {
+    return [...(this.outgoing.get(node) ?? [])];
   }
 
-  predecessors(node: AudioNode): Result<AudioNode[], OpenAuditionError> {
-    return ok([...(this.incoming.get(node) ?? [])]);
+  predecessors(node: AudioNode): AudioNode[] {
+    return [...(this.incoming.get(node) ?? [])];
   }
 
-  edges(): Result<AudioEdge[], OpenAuditionError> {
-    return ok(
-      [...this.outgoing.entries()].flatMap(([from, successors]) =>
-        [...successors].map((to): AudioEdge => [from, to]),
-      ),
+  edges(): AudioEdge[] {
+    return [...this.outgoing.entries()].flatMap(([from, successors]) =>
+      [...successors].map((to): AudioEdge => [from, to]),
     );
   }
 
@@ -112,13 +98,7 @@ export class AudioGraph {
   }
 
   disconnectAll(): Result<void, OpenAuditionError> {
-    const edgesResult = this.edges();
-
-    if (edgesResult.isErr()) {
-      return err(edgesResult.error);
-    }
-
-    for (const [from, to] of edgesResult.value) {
+    for (const [from, to] of this.edges()) {
       const disconnectResult = this.disconnect(from, to);
 
       if (disconnectResult.isErr()) {

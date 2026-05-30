@@ -19,14 +19,12 @@ interface CreateRuntimeEffectOptions {
 export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result<AudioEffect, OpenAuditionError> {
   const { context, effect, impulseResponses } = options;
   const id = `effect-${effect.index}-${effect.type.toLowerCase()}`;
-  const bypassed = !effect.enabled;
 
   if (effect.type === "Gain") {
     return ok(
       createGainEffect({
         context,
         id,
-        bypassed,
         gainDb: getNumberParam(effect.params, "gainDb", 0),
       }),
     );
@@ -37,7 +35,6 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
       createEqEffect({
         context,
         id,
-        bypassed,
         lowGainDb: getNumberParam(effect.params, "lowGainDb", 0),
         midGainDb: getNumberParam(effect.params, "midGainDb", 0),
         highGainDb: getNumberParam(effect.params, "highGainDb", 0),
@@ -54,7 +51,6 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
       createFilterEffect({
         context,
         id,
-        bypassed,
         filterType: getStringParam(effect.params, "filterType", "LowPass"),
         frequencyHz: getNumberParam(effect.params, "frequencyHz", 1000),
         q: getNumberParam(effect.params, "q", 0.707),
@@ -68,7 +64,6 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
       createDelayEffect({
         context,
         id,
-        bypassed,
         delaySeconds: getNumberParam(effect.params, "delaySeconds", 0.25),
         feedback: getNumberParam(effect.params, "feedback", 0.3),
         mix: getNumberParam(effect.params, "mix", 0.25),
@@ -92,7 +87,6 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
       createReverbEffect({
         context,
         id,
-        bypassed,
         impulseBuffer,
         mix: getNumberParam(effect.params, "mix", 0.2),
       }),

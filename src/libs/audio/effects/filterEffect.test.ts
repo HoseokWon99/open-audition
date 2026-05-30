@@ -33,7 +33,6 @@ describe("FilterEffect", () => {
     const effect = createFilterEffect({
       context,
       id: "filter-1",
-      bypassed: false,
       filterType: "HighPass",
       frequencyHz: 50_000,
       q: -1,
@@ -54,7 +53,6 @@ describe("FilterEffect", () => {
     const effect = createFilterEffect({
       context,
       id: "filter-1",
-      bypassed: false,
       filterType: "LowPass",
       frequencyHz: 800,
       q: 0.7,

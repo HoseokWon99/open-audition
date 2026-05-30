@@ -20,7 +20,6 @@ describe("GainEffect", () => {
     const effect = createGainEffect({
       context,
       id: "gain-1",
-      bypassed: false,
       gainDb: 6,
     });
 
@@ -35,7 +34,6 @@ describe("GainEffect", () => {
     const effect = createGainEffect({
       context,
       id: "gain-1",
-      bypassed: false,
       gainDb: -3,
     });
 

@@ -128,7 +128,6 @@ export interface KeyframePoint {
 export interface Effect {
   index: number;
   type: EffectType;
-  enabled: boolean;
   params: EffectParam[];
 }
 

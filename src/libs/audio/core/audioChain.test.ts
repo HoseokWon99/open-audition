@@ -40,14 +40,12 @@ describe("AudioChain", () => {
           id: "gain",
           input: gain,
           output: gain,
-          bypassed: false,
           activate: vi.fn((manager: AudioNodeManager) => manager.register(gain)),
         },
         {
           id: "filter",
           input: filter,
           output: filter,
-          bypassed: false,
           activate: vi.fn((manager: AudioNodeManager) => manager.register(filter)),
         },
       ],
@@ -57,42 +55,6 @@ describe("AudioChain", () => {
     expect(input.connect).toHaveBeenCalledWith(gain);
     expect(gain.connect).toHaveBeenCalledWith(filter);
     expect(filter.connect).toHaveBeenCalledWith(output);
-  });
-
-  it("skips bypassed effects without unregistering them", () => {
-    const context = {} as BaseAudioContext;
-    const manager = new AudioNodeManager(context);
-    const input = createFakeAudioNode(context);
-    const bypassed = createFakeAudioNode(context);
-    const active = createFakeAudioNode(context);
-    const output = createFakeAudioNode(context);
-
-    const chain = createAudioChain({
-      manager,
-      input,
-      output,
-      effects: [
-        {
-          id: "bypassed",
-          input: bypassed,
-          output: bypassed,
-          bypassed: true,
-          activate: vi.fn((manager: AudioNodeManager) => manager.register(bypassed)),
-        },
-        {
-          id: "active",
-          input: active,
-          output: active,
-          bypassed: false,
-          activate: vi.fn((manager: AudioNodeManager) => manager.register(active)),
-        },
-      ],
-    });
-
-    expect(chain.isOk()).toBe(true);
-    expect(input.connect).toHaveBeenCalledWith(active);
-    expect(active.connect).toHaveBeenCalledWith(output);
-    expect(bypassed.connect).not.toHaveBeenCalled();
   });
 
   it("does not directly connect compound effect input to output", () => {
@@ -112,7 +74,6 @@ describe("AudioChain", () => {
           id: "compound",
           input: effectInput,
           output: effectOutput,
-          bypassed: false,
           activate: vi.fn((manager: AudioNodeManager) =>
             manager.register(effectInput).andThen(() => manager.register(effectOutput)),
           ),
@@ -142,7 +103,6 @@ describe("AudioChain", () => {
           id: "old",
           input: oldEffect,
           output: oldEffect,
-          bypassed: false,
           activate: vi.fn((manager: AudioNodeManager) => manager.register(oldEffect)),
         },
       ],
@@ -153,7 +113,6 @@ describe("AudioChain", () => {
         id: "new",
         input: newEffect,
         output: newEffect,
-        bypassed: false,
         activate: vi.fn((manager: AudioNodeManager) => manager.register(newEffect)),
       },
     ]);
@@ -194,7 +153,6 @@ describe("AudioChain", () => {
           id: "effect",
           input: effect,
           output: effect,
-          bypassed: false,
           activate: vi.fn((manager: AudioNodeManager) => manager.register(effect)),
         },
       ],

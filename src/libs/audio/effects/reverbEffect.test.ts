@@ -44,7 +44,6 @@ describe("ReverbEffect", () => {
     const effect = createReverbEffect({
       context,
       id: "reverb-1",
-      bypassed: false,
       impulseBuffer,
       mix: 2,
     });
@@ -64,7 +63,6 @@ describe("ReverbEffect", () => {
     const effect = createReverbEffect({
       context,
       id: "reverb-1",
-      bypassed: false,
       impulseBuffer,
       mix: 0.25,
     });

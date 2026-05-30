@@ -29,7 +29,6 @@ export interface FilterEffect extends AudioEffect {
 interface FilterEffectOptions {
   context: BaseAudioContext;
   id: string;
-  bypassed: boolean;
   filterType: string;
   frequencyHz: number;
   q: number;
@@ -49,7 +48,6 @@ export function createFilterEffect(options: FilterEffectOptions): FilterEffect {
     input: filter,
     output: filter,
     filter,
-    bypassed: options.bypassed,
     activate: (manager) => activateFilterEffect(manager, filter),
   };
 }

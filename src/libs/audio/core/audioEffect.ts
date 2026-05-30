@@ -6,6 +6,5 @@ export interface AudioEffect {
   id: string;
   input: AudioNode;
   output: AudioNode;
-  bypassed: boolean;
   activate(manager: AudioNodeManager): Result<void, OpenAuditionError>;
 }

@@ -15,7 +15,6 @@ export interface ReverbEffect extends AudioEffect {
 interface ReverbEffectOptions {
   context: BaseAudioContext;
   id: string;
-  bypassed: boolean;
   impulseBuffer: AudioBuffer;
   mix: number;
 }
@@ -39,7 +38,6 @@ export function createReverbEffect(options: ReverbEffectOptions): ReverbEffect {
     dryGain,
     wetGain,
     convolver,
-    bypassed: options.bypassed,
     activate: (manager) => activateReverbEffect(manager, input, output, dryGain, wetGain, convolver),
   };
 }

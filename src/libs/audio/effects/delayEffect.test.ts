@@ -43,7 +43,6 @@ describe("DelayEffect", () => {
     const effect = createDelayEffect({
       context,
       id: "delay-1",
-      bypassed: false,
       delaySeconds: 12,
       feedback: 2,
       mix: -1,
@@ -64,7 +63,6 @@ describe("DelayEffect", () => {
     const effect = createDelayEffect({
       context,
       id: "delay-1",
-      bypassed: false,
       delaySeconds: 0.25,
       feedback: 0.4,
       mix: 0.35,
