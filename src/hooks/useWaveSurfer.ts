@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
-import WaveSurfer from "wavesurfer.js";
+import { useWavesurfer } from "@wavesurfer/react";
+import type WaveSurfer from "wavesurfer.js";
 import type { WaveSurferOptions } from "wavesurfer.js";
 import { resolveAudioSourceUrl } from "../libs/audio/waveform/audioSource";
 import type { MediaFile } from "../types/audio";
@@ -35,34 +36,19 @@ const fallbackWaveformPeaks = [
   bars.map((height, index) => clamp(height * (0.88 + Math.sin(index * 0.21) * 0.12), 0.08, 1)),
 ];
 
+const defaultWaveSurferOptions: UseWaveSurferOptions = {};
+
 export function useWaveSurfer(
   file: MediaFile | undefined,
-  options: UseWaveSurferOptions = {},
+  options: UseWaveSurferOptions = defaultWaveSurferOptions,
 ): WaveSurferController {
   const containerRef = useRef<HTMLDivElement>(null);
-  const waveSurferRef = useRef<WaveSurfer | null>(null);
-  const optionsRef = useRef(options);
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
-  const [durationSeconds, setDurationSeconds] = useState(file?.durationSeconds ?? 0);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [status, setStatus] = useState<WaveSurferStatus>("Idle");
-
-  optionsRef.current = options;
-
-  useEffect(() => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    let isCurrent = true;
-    const audioSourceUrl = resolveAudioSourceUrl(file);
-    const fallbackDurationSeconds = file?.durationSeconds ?? 70;
-    const waveSurfer = WaveSurfer.create({
-      container,
-      height: "auto",
+  const audioSourceUrl = resolveAudioSourceUrl(file);
+  const fallbackDurationSeconds = file?.durationSeconds ?? 70;
+  const waveSurferOptions = useMemo(
+    () => ({
+      container: containerRef,
+      height: "auto" as const,
       waveColor: "#00d99c",
       progressColor: "#00b985",
       cursorColor: "transparent",
@@ -74,19 +60,37 @@ export function useWaveSurfer(
       interact: false,
       normalize: true,
       splitChannels: [{ overlay: false }, { overlay: false }],
-      ...optionsRef.current,
-      ...(audioSourceUrl ? {} : { duration: fallbackDurationSeconds, peaks: fallbackWaveformPeaks }),
-    });
+      ...options,
+      ...(audioSourceUrl ? { url: audioSourceUrl } : { duration: fallbackDurationSeconds, peaks: fallbackWaveformPeaks }),
+    }),
+    [audioSourceUrl, fallbackDurationSeconds, options],
+  );
+  const {
+    currentTime: waveSurferCurrentTimeSeconds,
+    isPlaying,
+    isReady,
+    wavesurfer,
+  } = useWavesurfer(waveSurferOptions);
+  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
+  const [durationSeconds, setDurationSeconds] = useState(file?.durationSeconds ?? 0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<WaveSurferStatus>("Idle");
 
-    waveSurferRef.current = waveSurfer;
+  useEffect(() => {
     setCurrentTimeSeconds(0);
     setDurationSeconds(audioSourceUrl ? file?.durationSeconds ?? 0 : fallbackDurationSeconds);
     setErrorMessage(null);
-    setIsPlaying(false);
-    setStatus(audioSourceUrl ? "Loading" : "Ready");
+    setStatus(wavesurfer ? (audioSourceUrl ? "Loading" : "Ready") : "Idle");
+  }, [audioSourceUrl, fallbackDurationSeconds, file?.durationSeconds, wavesurfer]);
 
+  useEffect(() => {
+    if (!wavesurfer) {
+      return;
+    }
+
+    let isCurrent = true;
     const unsubscribers = [
-      waveSurfer.on("ready", (duration) => {
+      wavesurfer.on("ready", (duration) => {
         if (!isCurrent) {
           return;
         }
@@ -94,103 +98,70 @@ export function useWaveSurfer(
         setDurationSeconds(duration);
         setStatus("Ready");
       }),
-      waveSurfer.on("error", (error) => {
+      wavesurfer.on("error", (error) => {
         if (!isCurrent) {
           return;
         }
 
         setErrorMessage(error instanceof Error ? error.message : String(error));
         setStatus("Error");
-      }),
-      waveSurfer.on("play", () => {
-        if (isCurrent) {
-          setIsPlaying(true);
-        }
-      }),
-      waveSurfer.on("pause", () => {
-        if (isCurrent) {
-          setIsPlaying(false);
-        }
-      }),
-      waveSurfer.on("finish", () => {
-        if (isCurrent) {
-          setIsPlaying(false);
-        }
-      }),
-      waveSurfer.on("timeupdate", (seconds) => {
-        if (isCurrent) {
-          setCurrentTimeSeconds(seconds);
-        }
       }),
     ];
-
-    if (audioSourceUrl) {
-      void waveSurfer.load(audioSourceUrl).catch((error: unknown) => {
-        if (!isCurrent) {
-          return;
-        }
-
-        setErrorMessage(error instanceof Error ? error.message : String(error));
-        setStatus("Error");
-      });
-    }
 
     return () => {
       isCurrent = false;
       unsubscribers.forEach((unsubscribe) => unsubscribe());
-      waveSurfer.destroy();
-
-      if (waveSurferRef.current === waveSurfer) {
-        waveSurferRef.current = null;
-      }
     };
-  }, [file]);
+  }, [wavesurfer]);
+
+  useEffect(() => {
+    if (isReady) {
+      setStatus("Ready");
+    }
+  }, [isReady]);
+
+  useEffect(() => {
+    setCurrentTimeSeconds(waveSurferCurrentTimeSeconds);
+  }, [waveSurferCurrentTimeSeconds]);
 
   const play = useCallback(async () => {
-    const waveSurfer = waveSurferRef.current;
-
-    if (!waveSurfer) {
+    if (!wavesurfer) {
       return;
     }
 
     try {
-      await waveSurfer.play();
+      await wavesurfer.play();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : String(error));
       setStatus("Error");
     }
-  }, []);
+  }, [wavesurfer]);
 
   const pause = useCallback(async () => {
-    waveSurferRef.current?.pause();
-  }, []);
+    wavesurfer?.pause();
+  }, [wavesurfer]);
 
   const seek = useCallback(
     (seconds: number) => {
-      const waveSurfer = waveSurferRef.current;
-
-      if (!waveSurfer) {
+      if (!wavesurfer) {
         return;
       }
 
       const nextSeconds = clamp(seconds, 0, durationSeconds || file?.durationSeconds || 0);
-      waveSurfer.setTime(nextSeconds);
+      wavesurfer.setTime(nextSeconds);
       setCurrentTimeSeconds(nextSeconds);
     },
-    [durationSeconds, file?.durationSeconds],
+    [durationSeconds, file?.durationSeconds, wavesurfer],
   );
 
   const stop = useCallback(() => {
-    const waveSurfer = waveSurferRef.current;
-
-    if (!waveSurfer) {
+    if (!wavesurfer) {
       return;
     }
 
-    waveSurfer.stop();
+    wavesurfer.stop();
     setCurrentTimeSeconds(0);
-    setIsPlaying(false);
-  }, []);
+  }, [wavesurfer]);
 
   return useMemo(
     () => ({
