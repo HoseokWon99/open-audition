@@ -2,13 +2,17 @@ import type { core } from "zod";
 import type { EffectParam } from "../libs/audio/effects";
 
 export type MediaTab = "Files" | "History";
+export type HexColor = `#${string}`;
 
 export interface MediaFile {
   id: string;
   name: string;
   duration: string;
+  durationSeconds?: number;
   sampleRate: string;
+  sampleRateHz?: number;
   channels: string;
+  channelCount?: number;
   sourceFormat: string;
   mediaType: "Audio" | "Multitrack";
   filepath: string;
@@ -20,7 +24,7 @@ export interface TimelineClip {
   trackId: string;
   startPercent: number;
   widthPercent: number;
-  color: "Green" | "Yellow";
+  color: HexColor;
   sourceFileId: string;
   gainDb: number;
   fadeIn: string;
@@ -31,7 +35,7 @@ export interface TimelineClip {
 export interface TimelineTrack {
   id: string;
   name: string;
-  color: "Green" | "Purple" | "Yellow" | "Teal";
+  color: HexColor;
   gainDb: number;
   pan: number;
   input: string;
