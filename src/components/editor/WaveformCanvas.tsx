@@ -1,7 +1,9 @@
+import { useCallback, useEffect } from "react";
 import { TimelineRuler } from "./TimelineRuler";
 import { useWaveformSelection } from "../../hooks/useWaveformSelection";
 import { useWaveformViewport } from "../../hooks/useWaveformViewport";
 import { useWaveSurfer } from "../../hooks/useWaveSurfer";
+import type { WaveSurferController } from "../../hooks/useWaveSurfer";
 import type { MediaFile } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
@@ -14,10 +16,37 @@ const bars = Array.from({ length: 180 }, (_, index) => {
 
 interface WaveformCanvasProps {
   file?: MediaFile;
+  playheadSeconds: number;
+  onControllerChange: (controller: WaveSurferController | null) => void;
+  onReady: (durationSeconds: number) => void;
+  onSeek: (seconds: number) => void;
+  onTimeUpdate: (seconds: number) => void;
 }
 
-export function WaveformCanvas({ file }: WaveformCanvasProps) {
+export function WaveformCanvas({
+  file,
+  playheadSeconds,
+  onControllerChange,
+  onReady,
+  onSeek,
+  onTimeUpdate,
+}: WaveformCanvasProps) {
   const controller = useWaveSurfer(file);
+  const durationSeconds = controller.durationSeconds || file?.durationSeconds || 70;
+  const displayedPlayheadPercent =
+    durationSeconds <= 0 ? 0 : (playheadSeconds / durationSeconds) * 100;
+  const secondsFromPercent = useCallback(
+    (percent: number) => (durationSeconds * clamp(percent, 0, 100)) / 100,
+    [durationSeconds],
+  );
+  const changePlayheadPercent = useCallback(
+    (percent: number) => {
+      const seconds = secondsFromPercent(percent);
+      controller.seek(seconds);
+      onSeek(seconds);
+    },
+    [controller, onSeek, secondsFromPercent],
+  );
   const {
     contentStyle,
     changeVisibleWindow,
@@ -38,13 +67,32 @@ export function WaveformCanvas({ file }: WaveformCanvasProps) {
     contentRef,
     openSelectionMenu,
     openSubmenu,
-    playheadPercent,
+    playheadPercent: selectedPlayheadPercent,
     selection,
     selectionMenu,
     selectionStyle,
     startPlayheadDrag,
     startSelectionDrag,
-  } = useWaveformSelection();
+  } = useWaveformSelection({
+    onPlayheadPercentChange: changePlayheadPercent,
+    playheadPercent: displayedPlayheadPercent,
+  });
+
+  useEffect(() => {
+    onControllerChange(controller);
+
+    return () => onControllerChange(null);
+  }, [controller, onControllerChange]);
+
+  useEffect(() => {
+    if (controller.status === "Ready") {
+      onReady(controller.durationSeconds);
+    }
+  }, [controller.durationSeconds, controller.status, onReady]);
+
+  useEffect(() => {
+    onTimeUpdate(controller.currentTimeSeconds);
+  }, [controller.currentTimeSeconds, onTimeUpdate]);
 
   return (
     <div className="oa-waveform-editor">
@@ -81,7 +129,7 @@ export function WaveformCanvas({ file }: WaveformCanvasProps) {
         </div>
       </div>
       <TimelineRuler
-        durationSeconds={70}
+        durationSeconds={durationSeconds}
         scrollLeft={scrollLeft}
         timelineWidthPercent={timelineWidthPercent}
         zoomLevel={3}
@@ -102,10 +150,15 @@ export function WaveformCanvas({ file }: WaveformCanvasProps) {
             />
           ) : null}
           <div
-            aria-hidden="true"
+            aria-label="Waveform playhead"
+            aria-valuemax={Math.round(durationSeconds)}
+            aria-valuemin={0}
+            aria-valuenow={Math.round(playheadSeconds)}
             className="oa-wave-playhead"
             onMouseDown={startPlayheadDrag}
-            style={{ left: `${playheadPercent}%` }}
+            role="slider"
+            style={{ left: `${selectedPlayheadPercent}%` }}
+            tabIndex={0}
           />
           <div className="oa-fade-handle" />
           <div className="oa-floating-gain" style={selectionStyle}>

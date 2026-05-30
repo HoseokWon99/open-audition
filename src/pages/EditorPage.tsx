@@ -6,6 +6,7 @@ import { ResizableHandle } from "../components/editor/ResizableHandle";
 import { TopBar } from "../components/editor/TopBar";
 import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
+import type { WaveSurferController } from "../hooks/useWaveSurfer";
 import type { AudioTransportEngine, TransportState } from "../libs/audio/engine";
 import type { MediaFile, MediaTab, TimelineClip, TimelineTrack } from "../types/audio";
 import type { ProjectSummary } from "../types/project";
@@ -70,10 +71,25 @@ export function EditorPage({
   const [transportState, setTransportState] = useState<TransportState>(audioEngine.state);
   const [visibleStartPercent, setVisibleStartPercent] = useState(0);
   const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
+  const [waveformController, setWaveformController] = useState<WaveSurferController | null>(null);
+  const [waveformDurationSeconds, setWaveformDurationSeconds] = useState(70);
+  const [waveformPlayheadSeconds, setWaveformPlayheadSeconds] = useState(0);
   const timelineDurationSeconds = 140;
   const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
   const zoomLevel = clamp(Math.round((100 - visibleWidthPercent) / 15), 0, 5);
   const selectedFile = files.find((file) => file.id === selectedFileId);
+  const activeDurationSeconds =
+    editorView === "Waveform" ? waveformDurationSeconds : timelineDurationSeconds;
+  const activePlayheadSeconds =
+    editorView === "Waveform" ? waveformPlayheadSeconds : playheadSeconds;
+  const activeTransportState: TransportState =
+    editorView === "Waveform"
+      ? waveformController?.isPlaying
+        ? "Playing"
+        : waveformPlayheadSeconds > 0
+          ? "Paused"
+          : "Stopped"
+      : transportState;
 
   const layoutStyle = {
     "--left-dock-width": `${leftDockWidth}px`,
@@ -95,7 +111,21 @@ export function EditorPage({
     console.error(message);
   }, []);
 
+  const setWaveformPosition = useCallback(
+    (seconds: number) => {
+      const nextSeconds = clamp(seconds, 0, waveformDurationSeconds);
+      waveformController?.seek(nextSeconds);
+      setWaveformPlayheadSeconds(nextSeconds);
+    },
+    [waveformController, waveformDurationSeconds],
+  );
+
   const play = useCallback(() => {
+    if (editorView === "Waveform") {
+      void waveformController?.play();
+      return;
+    }
+
     void audioEngine.play(playheadSeconds).then((result) => {
       if (result.isErr()) {
         reportAudioError(result.error.message);
@@ -104,9 +134,14 @@ export function EditorPage({
 
       setTransportState(audioEngine.state);
     });
-  }, [audioEngine, playheadSeconds, reportAudioError]);
+  }, [audioEngine, editorView, playheadSeconds, reportAudioError, waveformController]);
 
   const pause = useCallback(() => {
+    if (editorView === "Waveform") {
+      void waveformController?.pause();
+      return;
+    }
+
     void audioEngine.pause().then((result) => {
       if (result.isErr()) {
         reportAudioError(result.error.message);
@@ -116,9 +151,15 @@ export function EditorPage({
       setPlayheadSeconds(clamp(audioEngine.currentTime(), 0, timelineDurationSeconds));
       setTransportState(audioEngine.state);
     });
-  }, [audioEngine, reportAudioError]);
+  }, [audioEngine, editorView, reportAudioError, waveformController]);
 
   const stop = useCallback(() => {
+    if (editorView === "Waveform") {
+      waveformController?.stop();
+      setWaveformPlayheadSeconds(0);
+      return;
+    }
+
     void audioEngine.stop().then((result) => {
       if (result.isErr()) {
         reportAudioError(result.error.message);
@@ -128,7 +169,7 @@ export function EditorPage({
       setPlayheadSeconds(0);
       setTransportState(audioEngine.state);
     });
-  }, [audioEngine, reportAudioError]);
+  }, [audioEngine, editorView, reportAudioError, waveformController]);
 
   useEffect(() => {
     if (transportState !== "Playing") {
@@ -161,6 +202,11 @@ export function EditorPage({
 
     return () => window.cancelAnimationFrame(animationFrame);
   }, [audioEngine, reportAudioError, transportState]);
+
+  useEffect(() => {
+    setWaveformDurationSeconds(selectedFile?.durationSeconds ?? 70);
+    setWaveformPlayheadSeconds(0);
+  }, [selectedFile]);
 
   return (
     <main className="oa-shell" style={layoutStyle}>
@@ -241,7 +287,14 @@ export function EditorPage({
               zoomLevel={zoomLevel}
             />
           ) : (
-            <WaveformCanvas file={selectedFile} />
+            <WaveformCanvas
+              file={selectedFile}
+              onControllerChange={setWaveformController}
+              onReady={setWaveformDurationSeconds}
+              onSeek={setWaveformPlayheadSeconds}
+              onTimeUpdate={setWaveformPlayheadSeconds}
+              playheadSeconds={waveformPlayheadSeconds}
+            />
           )}
           <ResizableHandle
             axis="Y"
@@ -251,15 +304,29 @@ export function EditorPage({
             }
           />
           <TransportBar
-            currentTime={formatTransportTime(playheadSeconds)}
-            onFastForward={() => setTransportPosition(playheadSeconds + 5)}
+            currentTime={formatTransportTime(activePlayheadSeconds)}
+            onFastForward={() =>
+              editorView === "Waveform"
+                ? setWaveformPosition(waveformPlayheadSeconds + 5)
+                : setTransportPosition(playheadSeconds + 5)
+            }
             onPause={pause}
             onPlay={play}
-            onRewind={() => setTransportPosition(playheadSeconds - 5)}
-            onSeekEnd={() => setTransportPosition(timelineDurationSeconds)}
-            onSeekStart={() => setTransportPosition(0)}
+            onRewind={() =>
+              editorView === "Waveform"
+                ? setWaveformPosition(waveformPlayheadSeconds - 5)
+                : setTransportPosition(playheadSeconds - 5)
+            }
+            onSeekEnd={() =>
+              editorView === "Waveform"
+                ? setWaveformPosition(activeDurationSeconds)
+                : setTransportPosition(timelineDurationSeconds)
+            }
+            onSeekStart={() =>
+              editorView === "Waveform" ? setWaveformPosition(0) : setTransportPosition(0)
+            }
             onStop={stop}
-            state={transportState}
+            state={activeTransportState}
           />
         </section>
       </div>

@@ -9,6 +9,11 @@ export interface WaveformSelection {
   endPercent: number;
 }
 
+interface UseWaveformSelectionOptions {
+  playheadPercent?: number;
+  onPlayheadPercentChange?: (percent: number) => void;
+}
+
 const minSelectionWidthPercent = 0.75;
 
 export function createWaveformSelection(
@@ -25,13 +30,19 @@ export function createWaveformSelection(
   return { startPercent, endPercent };
 }
 
-export function useWaveformSelection() {
+export function useWaveformSelection(options: UseWaveformSelectionOptions = {}) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [playheadPercent, setPlayheadPercent] = useState(52);
+  const [internalPlayheadPercent, setInternalPlayheadPercent] = useState(52);
   const [selection, setSelection] = useState<WaveformSelection | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<SelectionSubmenu | null>(null);
   const [collapsedSubmenu, setCollapsedSubmenu] = useState<SelectionSubmenu | null>(null);
   const [selectionMenu, setSelectionMenu] = useState<{ x: number; y: number } | null>(null);
+  const playheadPercent = options.playheadPercent ?? internalPlayheadPercent;
+
+  function setPlayheadPercent(percent: number) {
+    setInternalPlayheadPercent(percent);
+    options.onPlayheadPercentChange?.(percent);
+  }
 
   function contentPercentFromPointer(event: MouseEvent | React.MouseEvent<HTMLElement>) {
     const rect = contentRef.current?.getBoundingClientRect();
