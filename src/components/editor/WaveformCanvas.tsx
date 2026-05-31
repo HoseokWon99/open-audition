@@ -14,6 +14,19 @@ const bars = Array.from({ length: 180 }, (_, index) => {
   return clamp(rise * fall * variance, 0.08, 1);
 });
 
+const waveformSamples = Array.from({ length: 420 }, (_, index) => {
+  const progress = index / 419;
+  const attack = progress < 0.045 ? progress / 0.045 : 1;
+  const decay = progress > 0.62 ? Math.max(0.1, 1 - (progress - 0.62) / 0.38) : 1;
+  const phrase = 0.44 + Math.sin(index * 0.076) * 0.16 + Math.sin(index * 0.031) * 0.19;
+  const texture = Math.abs(Math.sin(index * 1.63) * Math.cos(index * 0.41)) * 0.3;
+  const transient = index % 53 === 0 || index % 89 === 0 ? 0.42 : 0;
+
+  return clamp((phrase + texture + transient) * attack * decay, 0.025, 0.94);
+});
+
+const waveformPolygonPoints = waveformPoints(waveformSamples);
+
 interface WaveformCanvasProps {
   file?: MediaFile;
   playheadSeconds: number;
@@ -163,6 +176,19 @@ export function WaveformCanvas({
           <div className="oa-fade-handle" />
           <div className="oa-floating-gain" style={selectionStyle}>
             ▥ ◯ +0 dB ↗
+          </div>
+          <div aria-hidden="true" className="oa-filled-waveform">
+            <div className="oa-filled-waveform-channel">
+              <svg preserveAspectRatio="none" viewBox="0 0 100 100">
+                <polygon points={waveformPolygonPoints} />
+              </svg>
+            </div>
+            <div className="oa-channel-divider" />
+            <div className="oa-filled-waveform-channel">
+              <svg preserveAspectRatio="none" viewBox="0 0 100 100">
+                <polygon points={waveformPolygonPoints} />
+              </svg>
+            </div>
           </div>
           <div
             aria-label="Rendered waveform"
@@ -314,4 +340,23 @@ export function WaveformCanvas({
       </div>
     </div>
   );
+}
+
+function waveformPoints(samples: number[]): string {
+  const upperPoints = samples.map((sample, index) => {
+    const x = (index / (samples.length - 1)) * 100;
+    const y = 50 - sample * 48;
+
+    return `${x.toFixed(2)},${y.toFixed(2)}`;
+  });
+  const lowerPoints = samples
+    .map((sample, index) => {
+      const x = (index / (samples.length - 1)) * 100;
+      const y = 50 + sample * 48;
+
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .reverse();
+
+  return [...upperPoints, ...lowerPoints].join(" ");
 }
