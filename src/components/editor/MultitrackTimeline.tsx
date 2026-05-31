@@ -304,6 +304,14 @@ export function MultitrackTimeline({
     });
   }
 
+  function unselectClipLevelKeyframes(clipId: string) {
+    setSelectedClipLevelKeyframes((currentSelection) => ({
+      ...currentSelection,
+      [clipId]: [],
+    }));
+    setClipLevelMenu(null);
+  }
+
   function toggleClipLevelMenu(
     event: React.MouseEvent<SVGRectElement>,
     clip: TimelineClip,
@@ -614,7 +622,17 @@ export function MultitrackTimeline({
                           preserveAspectRatio="none"
                           viewBox="0 0 100 100"
                         >
-                          <rect className="oa-clip-level-hitbox" height="100" width="100" />
+                          <rect
+                            className="oa-clip-level-hitbox"
+                            height="100"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              onSelectClip(clip.id);
+                              unselectClipLevelKeyframes(clip.id);
+                            }}
+                            width="100"
+                          />
                           <polyline
                             className="oa-clip-level-hitline"
                             onDoubleClick={(event) => addClipLevelKeyframe(event, clip)}
