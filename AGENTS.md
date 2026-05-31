@@ -64,3 +64,5 @@
 ## References
 
 - [View Organization](docs/views.md)
+- [Wavesurfer Examples](https://wavesurfer.xyz/examples)
+- [Wavesurfer Documentation](https://wavesurfer.xyz/docs/)
