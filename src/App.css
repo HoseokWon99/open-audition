@@ -1065,32 +1065,28 @@ button {
 
 .oa-clip-waveform-channel {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 2px;
   min-width: 0;
   padding: 0 12px;
   overflow: hidden;
 }
 
 .oa-clip-waveform-channel:first-child {
-  align-items: flex-end;
   padding-bottom: 14px;
 }
 
 .oa-clip-waveform-channel:last-child {
-  align-items: flex-start;
   padding-top: 14px;
 }
 
-.oa-clip-waveform-bar {
-  flex: 1 0 2px;
-  max-width: 8px;
-  height: var(--bar-height);
-  min-height: 1px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--clip-color) 82%, #00d99c);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--clip-color) 32%, transparent);
+.oa-clip-waveform-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.oa-clip-waveform-shape polygon {
+  fill: color-mix(in srgb, var(--clip-color) 86%, #00d99c);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--clip-color) 26%, transparent));
 }
 
 .oa-clip-level {
