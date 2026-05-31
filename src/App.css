@@ -1137,6 +1137,38 @@ button {
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.62));
 }
 
+.oa-clip-level-keyframe.is-selected {
+  fill: #58aaff;
+  stroke: #d8efff;
+  stroke-width: 1;
+}
+
+.oa-clip-level-menu {
+  position: fixed;
+  z-index: 40;
+  min-width: 138px;
+  padding: 4px;
+  border: 1px solid #5a5a5a;
+  background: #2f2f2f;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+}
+
+.oa-clip-level-menu button {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: #d8d8d8;
+  font-size: 12px;
+  text-align: left;
+}
+
+.oa-clip-level-menu button:hover {
+  background: #4b4b4b;
+  color: #ffffff;
+}
+
 .oa-bottom {
   display: grid;
   grid-template-columns: 220px 1fr 220px;

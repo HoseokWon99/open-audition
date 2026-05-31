@@ -13,6 +13,12 @@ interface ClipLevelKeyframe {
   yPercent: number;
 }
 
+interface ClipLevelMenu {
+  clipId: string;
+  x: number;
+  y: number;
+}
+
 interface MultitrackTimelineProps {
   clips: TimelineClip[];
   durationSeconds: number;
@@ -68,6 +74,10 @@ export function MultitrackTimeline({
   const [clipLevelKeyframes, setClipLevelKeyframes] = useState<Record<string, ClipLevelKeyframe[]>>(
     {},
   );
+  const [selectedClipLevelKeyframes, setSelectedClipLevelKeyframes] = useState<
+    Record<string, string[]>
+  >({});
+  const [clipLevelMenu, setClipLevelMenu] = useState<ClipLevelMenu | null>(null);
   const [timelineScrollLeft, setTimelineScrollLeft] = useState(0);
 
   function percentFromPointer(event: MouseEvent | React.MouseEvent<HTMLElement>) {
@@ -164,6 +174,7 @@ export function MultitrackTimeline({
     const yPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
 
     upsertClipLevelKeyframe(clip.id, xPercent, yPercent);
+    setClipLevelMenu(null);
   }
 
   function upsertClipLevelKeyframe(clipId: string, xPercent: number, yPercent: number) {
@@ -187,6 +198,7 @@ export function MultitrackTimeline({
     event.preventDefault();
     event.stopPropagation();
     onSelectClip(clip.id);
+    setClipLevelMenu(null);
 
     const svg = event.currentTarget.ownerSVGElement;
 
@@ -225,9 +237,14 @@ export function MultitrackTimeline({
     clip: TimelineClip,
     keyframe: ClipLevelKeyframe,
   ) {
+    if (event.button !== 0) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
     onSelectClip(clip.id);
+    setClipLevelMenu(null);
 
     const svg = event.currentTarget.ownerSVGElement;
 
@@ -269,6 +286,79 @@ export function MultitrackTimeline({
 
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", stopDrag);
+  }
+
+  function selectClipLevelKeyframe(clipId: string, keyframeId: string, shouldExtend: boolean) {
+    setSelectedClipLevelKeyframes((currentSelection) => {
+      const currentClipSelection = currentSelection[clipId] ?? [];
+      const nextClipSelection = shouldExtend
+        ? currentClipSelection.includes(keyframeId)
+          ? currentClipSelection.filter((selectedId) => selectedId !== keyframeId)
+          : [...currentClipSelection, keyframeId]
+        : [keyframeId];
+
+      return {
+        ...currentSelection,
+        [clipId]: nextClipSelection,
+      };
+    });
+  }
+
+  function toggleClipLevelMenu(
+    event: React.MouseEvent<SVGRectElement>,
+    clip: TimelineClip,
+    keyframe: ClipLevelKeyframe,
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectClip(clip.id);
+    selectClipLevelKeyframe(clip.id, keyframe.id, event.shiftKey);
+
+    setClipLevelMenu((currentMenu) =>
+      currentMenu?.clipId === clip.id
+        ? null
+        : {
+            clipId: clip.id,
+            x: event.clientX,
+            y: event.clientY,
+          },
+    );
+  }
+
+  function deleteSelectedClipLevelKeyframes(clipId: string) {
+    const selectedKeyframeIds = selectedClipLevelKeyframes[clipId] ?? [];
+
+    if (selectedKeyframeIds.length === 0) {
+      return;
+    }
+
+    setClipLevelKeyframes((currentKeyframes) => ({
+      ...currentKeyframes,
+      [clipId]: (currentKeyframes[clipId] ?? defaultClipLevelKeyframes()).filter(
+        (keyframe) => !selectedKeyframeIds.includes(keyframe.id),
+      ),
+    }));
+    setSelectedClipLevelKeyframes((currentSelection) => ({
+      ...currentSelection,
+      [clipId]: [],
+    }));
+    setClipLevelMenu(null);
+  }
+
+  function resetSelectedClipLevelKeyframes(clipId: string) {
+    const selectedKeyframeIds = selectedClipLevelKeyframes[clipId] ?? [];
+
+    if (selectedKeyframeIds.length === 0) {
+      return;
+    }
+
+    setClipLevelKeyframes((currentKeyframes) => ({
+      ...currentKeyframes,
+      [clipId]: (currentKeyframes[clipId] ?? defaultClipLevelKeyframes()).map((keyframe) =>
+        selectedKeyframeIds.includes(keyframe.id) ? { ...keyframe, yPercent: 50 } : keyframe,
+      ),
+    }));
+    setClipLevelMenu(null);
   }
 
   function nudgePlayhead(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -361,6 +451,16 @@ export function MultitrackTimeline({
     lanes.scrollLeft = nextScrollLeft;
     setTimelineScrollLeft(nextScrollLeft);
   }, [visibleStartPercent, visibleWidthPercent]);
+
+  useEffect(() => {
+    function closeClipLevelMenu() {
+      setClipLevelMenu(null);
+    }
+
+    window.addEventListener("click", closeClipLevelMenu);
+
+    return () => window.removeEventListener("click", closeClipLevelMenu);
+  }, []);
 
   return (
     <div className="oa-editor-area">
@@ -478,6 +578,7 @@ export function MultitrackTimeline({
                   >
                     {trackClips.map((clip) => {
                       const levelKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+                      const selectedKeyframeIds = selectedClipLevelKeyframes[clip.id] ?? [];
 
                       return (
                       <button
@@ -530,9 +631,21 @@ export function MultitrackTimeline({
                           />
                           {levelKeyframes.map((keyframe) => (
                             <rect
-                              className="oa-clip-level-keyframe"
+                              className={`oa-clip-level-keyframe ${
+                                selectedKeyframeIds.includes(keyframe.id) ? "is-selected" : ""
+                              }`}
                               height="3.8"
                               key={keyframe.id}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onSelectClip(clip.id);
+                                selectClipLevelKeyframe(clip.id, keyframe.id, event.shiftKey);
+                                setClipLevelMenu(null);
+                              }}
+                              onContextMenu={(event) =>
+                                toggleClipLevelMenu(event, clip, keyframe)
+                              }
                               onMouseDown={(event) =>
                                 startClipLevelKeyframeDrag(event, clip, keyframe)
                               }
@@ -543,6 +656,30 @@ export function MultitrackTimeline({
                             />
                           ))}
                         </svg>
+                        {clipLevelMenu?.clipId === clip.id ? (
+                          <div
+                            className="oa-clip-level-menu"
+                            onClick={(event) => event.stopPropagation()}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            style={{
+                              left: `${clipLevelMenu.x}px`,
+                              top: `${clipLevelMenu.y}px`,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => resetSelectedClipLevelKeyframes(clip.id)}
+                            >
+                              ResetToCenter
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteSelectedClipLevelKeyframes(clip.id)}
+                            >
+                              DeleteKeyframes
+                            </button>
+                          </div>
+                        ) : null}
                         <span
                           aria-hidden="true"
                           className="oa-clip-trim end"
