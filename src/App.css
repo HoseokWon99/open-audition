@@ -1107,6 +1107,16 @@ button {
   fill: transparent;
 }
 
+.oa-clip-level-hitline {
+  fill: none;
+  stroke: transparent;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 14;
+  vector-effect: non-scaling-stroke;
+  cursor: ns-resize;
+}
+
 .oa-clip-level-line {
   fill: none;
   stroke: #fff2a3;
@@ -1114,6 +1124,7 @@ button {
   stroke-linejoin: round;
   stroke-width: 2.5;
   vector-effect: non-scaling-stroke;
+  pointer-events: none;
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.55));
 }
 
@@ -1122,6 +1133,7 @@ button {
   stroke: #d8e3d2;
   stroke-width: 0.7;
   vector-effect: non-scaling-stroke;
+  cursor: move;
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.62));
 }
 

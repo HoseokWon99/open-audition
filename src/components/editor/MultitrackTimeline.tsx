@@ -148,18 +148,29 @@ export function MultitrackTimeline({
     window.addEventListener("mouseup", stopDrag);
   }
 
-  function addClipLevelKeyframe(event: React.MouseEvent<SVGSVGElement>, clip: TimelineClip) {
+  function addClipLevelKeyframe(event: React.MouseEvent<SVGPolylineElement>, clip: TimelineClip) {
     event.preventDefault();
     event.stopPropagation();
     onSelectClip(clip.id);
 
-    const rect = event.currentTarget.getBoundingClientRect();
+    const svg = event.currentTarget.ownerSVGElement;
+
+    if (!svg) {
+      return;
+    }
+
+    const rect = svg.getBoundingClientRect();
     const xPercent = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
     const yPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
-    const keyframeId = `${clip.id}-${Math.round(xPercent * 100)}-${Math.round(yPercent * 100)}`;
+
+    upsertClipLevelKeyframe(clip.id, xPercent, yPercent);
+  }
+
+  function upsertClipLevelKeyframe(clipId: string, xPercent: number, yPercent: number) {
+    const keyframeId = `${clipId}-${Math.round(xPercent * 100)}-${Math.round(yPercent * 100)}`;
 
     setClipLevelKeyframes((currentKeyframes) => {
-      const existingKeyframes = currentKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+      const existingKeyframes = currentKeyframes[clipId] ?? defaultClipLevelKeyframes();
       const nextKeyframes = existingKeyframes
         .filter((keyframe) => Math.abs(keyframe.xPercent - xPercent) > 1.25)
         .concat({ id: keyframeId, xPercent, yPercent })
@@ -167,9 +178,97 @@ export function MultitrackTimeline({
 
       return {
         ...currentKeyframes,
-        [clip.id]: nextKeyframes,
+        [clipId]: nextKeyframes,
       };
     });
+  }
+
+  function startClipLevelLineDrag(event: React.MouseEvent<SVGPolylineElement>, clip: TimelineClip) {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectClip(clip.id);
+
+    const svg = event.currentTarget.ownerSVGElement;
+
+    if (!svg) {
+      return;
+    }
+
+    const rect = svg.getBoundingClientRect();
+    const initialYPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
+    const initialKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+
+    function handleMove(moveEvent: MouseEvent) {
+      const nextYPercent = clamp(((moveEvent.clientY - rect.top) / rect.height) * 100, 0, 100);
+      const deltaYPercent = nextYPercent - initialYPercent;
+
+      setClipLevelKeyframes((currentKeyframes) => ({
+        ...currentKeyframes,
+        [clip.id]: initialKeyframes.map((keyframe) => ({
+          ...keyframe,
+          yPercent: clamp(keyframe.yPercent + deltaYPercent, 0, 100),
+        })),
+      }));
+    }
+
+    function stopDrag() {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", stopDrag);
+    }
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", stopDrag);
+  }
+
+  function startClipLevelKeyframeDrag(
+    event: React.MouseEvent<SVGRectElement>,
+    clip: TimelineClip,
+    keyframe: ClipLevelKeyframe,
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    onSelectClip(clip.id);
+
+    const svg = event.currentTarget.ownerSVGElement;
+
+    if (!svg) {
+      return;
+    }
+
+    const rect = svg.getBoundingClientRect();
+    const initialXPercent = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
+    const initialYPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
+    const initialKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+
+    function handleMove(moveEvent: MouseEvent) {
+      const nextXPercent = clamp(((moveEvent.clientX - rect.left) / rect.width) * 100, 0, 100);
+      const nextYPercent = clamp(((moveEvent.clientY - rect.top) / rect.height) * 100, 0, 100);
+      const deltaXPercent = nextXPercent - initialXPercent;
+      const deltaYPercent = nextYPercent - initialYPercent;
+
+      setClipLevelKeyframes((currentKeyframes) => ({
+        ...currentKeyframes,
+        [clip.id]: initialKeyframes
+          .map((candidate) =>
+            candidate.id === keyframe.id
+              ? {
+                  ...candidate,
+                  xPercent: clamp(candidate.xPercent + deltaXPercent, 0, 100),
+                  yPercent: clamp(candidate.yPercent + deltaYPercent, 0, 100),
+                }
+              : candidate,
+          )
+          .sort((left, right) => left.xPercent - right.xPercent),
+      }));
+    }
+
+    function stopDrag() {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", stopDrag);
+    }
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", stopDrag);
   }
 
   function nudgePlayhead(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -410,12 +509,19 @@ export function MultitrackTimeline({
                         <svg
                           aria-hidden="true"
                           className="oa-clip-level"
-                          onClick={(event) => addClipLevelKeyframe(event, clip)}
                           onMouseDown={(event) => event.stopPropagation()}
                           preserveAspectRatio="none"
                           viewBox="0 0 100 100"
                         >
                           <rect className="oa-clip-level-hitbox" height="100" width="100" />
+                          <polyline
+                            className="oa-clip-level-hitline"
+                            onDoubleClick={(event) => addClipLevelKeyframe(event, clip)}
+                            onMouseDown={(event) => startClipLevelLineDrag(event, clip)}
+                            points={levelKeyframes
+                              .map((keyframe) => `${keyframe.xPercent},${keyframe.yPercent}`)
+                              .join(" ")}
+                          />
                           <polyline
                             className="oa-clip-level-line"
                             points={levelKeyframes
@@ -427,6 +533,9 @@ export function MultitrackTimeline({
                               className="oa-clip-level-keyframe"
                               height="3.8"
                               key={keyframe.id}
+                              onMouseDown={(event) =>
+                                startClipLevelKeyframeDrag(event, clip, keyframe)
+                              }
                               transform={`rotate(45 ${keyframe.xPercent} ${keyframe.yPercent})`}
                               width="3.8"
                               x={keyframe.xPercent - 1.9}
