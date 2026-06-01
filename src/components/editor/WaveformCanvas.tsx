@@ -327,7 +327,7 @@ export function WaveformCanvas({
                 role="menu"
               >
                 <button className="oa-menu-item" role="menuitem" type="button">
-                  <span>물안경.sesx</span>
+                  <span>물안경.oasx</span>
                 </button>
                 <div className="oa-menu-separator" />
                 <button className="oa-menu-item" role="menuitem" type="button">

@@ -70,13 +70,13 @@ export const mediaFiles: MediaFile[] = [
   },
   {
     id: "session",
-    name: "물안경.sesx",
+    name: "물안경.oasx",
     duration: "1:02:41.638",
     sampleRate: "48000 Hz",
     channels: "Stereo",
     sourceFormat: "Open Audition Multitrack Session",
     mediaType: "Multitrack",
-    filepath: "/Users/.../Audition/26.0/물안경/물안경.sesx",
+    filepath: "/Users/.../Audition/26.0/물안경/물안경.oasx",
   },
   {
     id: "ending",
@@ -188,7 +188,7 @@ export const historyEntries = [
   "Moved mola mola to Track 3",
   "Selected Track 3",
   "Adjusted clip gain to +0 dB",
-  "Saved 물안경.sesx",
+  "Saved 물안경.oasx",
 ];
 
 export const shortcuts: Shortcut[] = [

@@ -12,7 +12,7 @@
 - Fade/crossfade editing
 - Essential effects: gain, eq, filter, reverb, delay, pitch shift, time stretching, noise reduction, normalization ...
 - Keyframe for clip
-- Save multitrack as xml
+- Save multitrack session data as `.oasx` XML
 
 **This is NOT a DAW for music production. Priority is reliable theatrical sound editing workflow.**
 
@@ -49,6 +49,7 @@
 ### TypeScript
 
 - For union types, use PascalCase string literal values, e.g. `type MediaTab = "Files" | "History";`.
+- Use camelCase for TypeScript field names, including DTOs returned from Rust/Tauri commands.
 - Do not use type aliases for trivial types.
 - Use pascal case for higher order function
 - Order in typescript file: import phrases -> constant -> internal type&interface&class -> exported class&function -> internal function
@@ -56,6 +57,12 @@
 - Prefer functional programming patterns when they improve clarity: pure functions, immutable data flow, composable transforms, and focused higher-order helpers.
 - Prefer lazy evaluation for expensive or optional work, especially audio processing, derived state, XML parsing, waveform analysis, and UI selectors.
 - Avoid throwing errors for recoverable failures; return `Result` / `ResultAsync` from `neverthrow` with `OpenAuditionError` instead.
+
+### Rust / Tauri API
+
+- Perform audio analysis and derived audio calculation on the Rust side. The frontend should request metadata, peak data, rendered/derived audio, and cache status from Tauri commands instead of decoding or calculating heavy audio data in React.
+- Keep Rust struct fields idiomatic snake_case internally, but expose frontend-facing serialized command DTOs as camelCase with serde, e.g. `#[serde(rename_all = "camelCase")]`.
+- For Tauri commands that return raw byte data, return `tauri::ipc::Response::new(bytes)` instead of serializing bytes through JSON to avoid base64 overhead.
 
 ## Rules
 

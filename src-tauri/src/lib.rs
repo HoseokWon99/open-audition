@@ -1,10 +1,25 @@
+mod media;
 mod ui;
-mod disk;
+
+use std::sync::Mutex;
+
+use media::cache::MediaCache;
+use media::commands::{
+    ensure_asset_peaks, import_media_file, import_video_audio, read_asset_bytes, read_asset_peaks,
+};
+use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+fn media_cache_dir(app: &tauri::App) -> std::path::PathBuf {
+    app.path()
+        .app_cache_dir()
+        .unwrap_or_else(|_| std::env::temp_dir().join("open-audition-cache"))
+        .join("media")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -13,9 +28,18 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             ui::menu::install(app)?;
+            let cache = MediaCache::new(media_cache_dir(app))?;
+            app.manage(Mutex::new(cache));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            import_media_file,
+            import_video_audio,
+            read_asset_bytes,
+            ensure_asset_peaks,
+            read_asset_peaks,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
