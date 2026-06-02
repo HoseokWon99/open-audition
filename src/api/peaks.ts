@@ -1,19 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { Peak, PeakFrame } from "../types/peaks";
 
 const OapkHeaderByteLength = 32;
 
-export interface PeakFrame {
-  min: number;
-  max: number;
-}
-
-export interface Peak {
-  sampleRateHz: number;
-  channelCount: number;
-  samplesPerPeak: number;
-  sourceFrameCount: bigint;
-  frames: PeakFrame[];
-}
+export type { Peak, PeakFrame } from "../types/peaks";
 
 export function ensureAssetPeaks(assetId: string, resolution: number): Promise<string> {
   return invoke<string>("ensure_asset_peaks", { assetId, resolution });
