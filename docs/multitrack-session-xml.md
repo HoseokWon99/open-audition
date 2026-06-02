@@ -2,6 +2,8 @@
 
 Open Audition stores project-level information separately from multitrack session data. A project can include many multitrack sessions, so the project file should reference session files instead of embedding all timeline data.
 
+Open Audition parses and validates `.oasx` files on the Rust/Tauri side. Frontend code should consume the parsed camelCase `Multitrack` DTO returned by Tauri commands instead of parsing XML directly.
+
 This document describes the multitrack session file format only.
 
 ## File Type
@@ -88,7 +90,7 @@ Rules:
           <fadeOut duration="1.25" curve="linear" />
           <keyframes>
             <keyframe target="gainDb">
-              <point time="0" value="-8" curve="hold" />
+              <point time="0" value="-8" curve="linear" />
               <point time="2.5" value="0" curve="linear" />
             </keyframe>
           </keyframes>
@@ -134,7 +136,7 @@ Tracks are timeline lanes, not full DAW mixer channels.
   index="0"
   name="SFX"
   color="#5B8DEF"
-  height="medium"
+  height="1"
   locked="false"
   muted="false"
   solo="false"
@@ -152,7 +154,7 @@ Track fields:
 | `index` | yes | integer | Zero-based track index and visible top-to-bottom order in the multitrack editor. Lower numbers appear higher. |
 | `name` | yes | string | User-visible track name. |
 | `color` | no | CSS hex color | UI color used for the track header and clips unless a clip overrides it. |
-| `height` | no | enum | Timeline lane display height. Initial values are `small`, `medium`, and `large`. |
+| `height` | no | decimal | Timeline lane display height as a positive numeric ratio. |
 | `locked` | yes | boolean | Prevents accidental clip movement, trimming, and deletion on this track. |
 | `muted` | yes | boolean | Excludes this track from playback and render unless explicitly overridden by export options. |
 | `solo` | yes | boolean | Plays this track while muting non-solo tracks during preview. |
@@ -268,7 +270,7 @@ Keyframe times are clip-local seconds.
 
 ```xml
 <keyframe target="gainDb">
-  <point time="0" value="-8" curve="hold" />
+  <point time="0" value="-8" curve="linear" />
   <point time="2.5" value="0" curve="linear" />
 </keyframe>
 ```
@@ -278,12 +280,7 @@ Initial targets:
 - `gainDb`
 - `pan`
 
-Initial curve values:
-
-- `hold`
-- `linear`
-- `easeIn`
-- `easeOut`
+The keyframe point `curve` attribute is always `linear`. The parsed frontend DTO omits keyframe curve because it is not variable.
 
 ### `effects`
 

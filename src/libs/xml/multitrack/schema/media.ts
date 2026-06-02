@@ -26,7 +26,7 @@ export const mediaAssetSchema = z
     duration: asset["@_duration"],
     sampleRate: asset["@_sampleRate"],
     channelCount: asset["@_channelCount"],
-    hash: asset["@_hash"],
+    hash: asset["@_hash"] ?? null,
   }));
 
 export const mediaContainerSchema = z

@@ -1,11 +1,6 @@
-export type EffectParamType = "Number" | "String" | "Boolean";
-export type EffectParamValue = number | string | boolean;
+import type { EffectParam, EffectParamType, EffectParamValue } from "../../../types/multitrack";
 
-export interface EffectParam {
-  name: string;
-  type: EffectParamType;
-  value: EffectParamValue;
-}
+export type { EffectParam, EffectParamType, EffectParamValue };
 
 export function getNumberParam(params: EffectParam[], name: string, fallback: number): number {
   const value = getParamValue(params, name);

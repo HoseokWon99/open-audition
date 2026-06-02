@@ -26,7 +26,7 @@ function App() {
   const [selectedProjectId, setSelectedProjectId] = useState(recentProjects[0].id);
   const [activeMediaTab, setActiveMediaTab] = useState<MediaTab>("Files");
   const [clips, setClips] = useState(mockClips);
-  const [selectedFileId, setSelectedFileId] = useState("session");
+  const [selectedFileId, setSelectedFileId] = useState("opening");
   const [tracks, setTracks] = useState(mockTracks);
   const [selectedTrackId, setSelectedTrackId] = useState("track-3");
   const [selectedClipId, setSelectedClipId] = useState("clip-mola");

@@ -1,4 +1,4 @@
-import type { Effect, MultitrackSemanticIssue, Multitrack, Track } from "../../../types/audio";
+import type { Effect, MultitrackSemanticIssue, Multitrack, Track } from "../../../types/multitrack";
 
 export function validateMultitrackSemantic(
   session: Multitrack,

@@ -1,4 +1,5 @@
 mod media;
+mod session;
 mod ui;
 
 use std::sync::Mutex;
@@ -7,6 +8,7 @@ use media::cache::MediaCache;
 use media::commands::{
     ensure_asset_peaks, import_media_file, import_video_audio, read_asset_bytes, read_asset_peaks,
 };
+use session::commands::{open_oasx_file, parse_oasx, save_oasx_file};
 use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -39,6 +41,9 @@ pub fn run() {
             read_asset_bytes,
             ensure_asset_peaks,
             read_asset_peaks,
+            parse_oasx,
+            open_oasx_file,
+            save_oasx_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

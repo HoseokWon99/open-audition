@@ -1,6 +1,3 @@
-import type { core } from "zod";
-import type { EffectParam } from "../libs/audio/effects";
-
 export type MediaTab = "Files" | "History";
 export type HexColor = `#${string}`;
 
@@ -42,106 +39,21 @@ export interface TimelineTrack {
   output: string;
 }
 
-export type TrackHeight = "Small" | "Medium" | "Large";
-export type FadeCurve = "Linear" | "EqualPower" | "Exponential" | "Logarithmic";
-export type KeyframeTarget = "GainDb" | "Pan";
-export type KeyframeCurve = "Hold" | "Linear" | "EaseIn" | "EaseOut";
-
-export type EffectType =
-  | "Gain"
-  | "Eq"
-  | "Filter"
-  | "Reverb"
-  | "Delay"
-  | "PitchShift"
-  | "TimeStretch"
-  | "NoiseReduction"
-  | "Normalize";
-
-export interface Multitrack {
-  version: "1.0";
-  id: string;
-  name: string;
-  sampleRate: number;
-  bitDepth: number;
-  createdAt: string;
-  updatedAt: string;
-  duration: number;
-  mediaAssets: MediaAsset[];
-  tracks: Track[];
-}
-
-export interface MediaAsset {
-  id: string;
-  name: string;
-  path: string;
-  duration: number;
-  sampleRate: number;
-  channelCount: number;
-  hash?: string;
-}
-
-export interface Track {
-  index: number;
-  name: string;
-  color?: string;
-  height?: TrackHeight;
-  locked: boolean;
-  muted: boolean;
-  solo: boolean;
-  gainDb: number;
-  pan: number;
-  clips: Clip[];
-  effects: Effect[];
-}
-
-export interface Clip {
-  id: string;
-  assetId: string;
-  name?: string;
-  locked: boolean;
-  muted: boolean;
-  timelineStart: number;
-  sourceStart: number;
-  duration: number;
-  gainDb: number;
-  pan: number;
-  playbackRate: number;
-  fadeIn?: Fade;
-  fadeOut?: Fade;
-  keyframes: Keyframe[];
-  effects: Effect[];
-}
-
-export interface Fade {
-  duration: number;
-  curve: FadeCurve;
-}
-
-export interface Keyframe {
-  target: KeyframeTarget;
-  points: KeyframePoint[];
-}
-
-export interface KeyframePoint {
-  time: number;
-  value: number;
-  curve: KeyframeCurve;
-}
-
-export interface Effect {
-  index: number;
-  type: EffectType;
-  params: EffectParam[];
-}
-
-export interface MultitrackSemanticIssue {
-  path: string;
-  message: string;
-}
-
-export type ParseMultitrackXmlError =
-  | { type: "DecodeFailed"; message: string }
-  | { type: "MalformedXml"; message: string }
-  | { type: "SchemaInvalid"; issues: core.$ZodIssue[] }
-  | { type: "SemanticInvalid"; issues: MultitrackSemanticIssue[] };
+export type {
+  Clip,
+  Effect,
+  EffectParam,
+  EffectParamType,
+  EffectParamValue,
+  EffectType,
+  Fade,
+  FadeCurve,
+  Keyframe,
+  KeyframePoint,
+  KeyframeTarget,
+  MediaAsset,
+  Multitrack,
+  MultitrackSemanticIssue,
+  ParseMultitrackXmlError,
+  Track,
+} from "./multitrack";
