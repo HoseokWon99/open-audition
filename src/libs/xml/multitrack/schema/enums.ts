@@ -1,15 +1,5 @@
-import type { EffectParamType } from "../../../audio/effects";
-import type { EffectType, FadeCurve, KeyframeCurve, KeyframeTarget, TrackHeight } from "../../../../types/audio";
+import type { EffectParamType, EffectType, FadeCurve, KeyframeTarget } from "../../../../types/multitrack";
 import { mapXmlValue } from "./primitives";
-
-export const trackHeightSchema = mapXmlValue<TrackHeight>(
-  {
-    small: "Small",
-    medium: "Medium",
-    large: "Large",
-  },
-  "track height",
-);
 
 export const fadeCurveSchema = mapXmlValue<FadeCurve>(
   {
@@ -27,16 +17,6 @@ export const keyframeTargetSchema = mapXmlValue<KeyframeTarget>(
     pan: "Pan",
   },
   "keyframe target",
-);
-
-export const keyframeCurveSchema = mapXmlValue<KeyframeCurve>(
-  {
-    hold: "Hold",
-    linear: "Linear",
-    easeIn: "EaseIn",
-    easeOut: "EaseOut",
-  },
-  "keyframe curve",
 );
 
 export const effectTypeSchema = mapXmlValue<EffectType>(

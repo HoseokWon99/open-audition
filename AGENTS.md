@@ -50,6 +50,7 @@
 
 - For union types, use PascalCase string literal values, e.g. `type MediaTab = "Files" | "History";`.
 - Use camelCase for TypeScript field names, including DTOs returned from Rust/Tauri commands.
+- For struct/interface fields that would repeat the owner name, use `kind` instead of names like `effectType` or `paramType`. Do not use `type` as a field name because it is reserved in Rust.
 - Do not use type aliases for trivial types.
 - Use pascal case for higher order function
 - Order in typescript file: import phrases -> constant -> internal type&interface&class -> exported class&function -> internal function
@@ -61,7 +62,9 @@
 ### Rust / Tauri API
 
 - Perform audio analysis and derived audio calculation on the Rust side. The frontend should request metadata, peak data, rendered/derived audio, and cache status from Tauri commands instead of decoding or calculating heavy audio data in React.
+- Parse, validate, open, and save `.oasx` XML on the Rust side. React should call Tauri session commands and should not parse session XML directly except in temporary migration tests.
 - Keep Rust struct fields idiomatic snake_case internally, but expose frontend-facing serialized command DTOs as camelCase with serde, e.g. `#[serde(rename_all = "camelCase")]`.
+- For Rust DTO fields that would otherwise be named `*_type`, use `kind` instead. For XML attributes named `type`, map them with serde rename, e.g. `#[serde(rename = "@type")] pub kind: String`.
 - For Tauri commands that return raw byte data, return `tauri::ipc::Response::new(bytes)` instead of serializing bytes through JSON to avoid base64 overhead.
 
 ## Rules

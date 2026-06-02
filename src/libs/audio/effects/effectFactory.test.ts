@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Effect } from "../../../types/audio";
+import type { Effect } from "../../../types/multitrack";
 import { createRuntimeEffect } from "./effectFactory";
 
 function createFakeGain(context: BaseAudioContext): GainNode {
@@ -57,8 +57,8 @@ describe("createRuntimeEffect", () => {
     const context = createFakeContext();
     const effect: Effect = {
       index: 0,
-      type: "Gain",
-      params: [{ name: "gainDb", type: "Number", value: 3 }],
+      kind: "Gain",
+      params: [{ name: "gainDb", kind: "Number", value: 3 }],
     };
 
     const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
@@ -71,11 +71,11 @@ describe("createRuntimeEffect", () => {
     const context = createFakeContext();
     const effect: Effect = {
       index: 4,
-      type: "Eq",
+      kind: "Eq",
       params: [
-        { name: "lowGainDb", type: "Number", value: -2 },
-        { name: "midGainDb", type: "Number", value: 1 },
-        { name: "highGainDb", type: "Number", value: 3 },
+        { name: "lowGainDb", kind: "Number", value: -2 },
+        { name: "midGainDb", kind: "Number", value: 1 },
+        { name: "highGainDb", kind: "Number", value: 3 },
       ],
     };
 
@@ -89,11 +89,11 @@ describe("createRuntimeEffect", () => {
     const context = createFakeContext();
     const effect: Effect = {
       index: 5,
-      type: "Filter",
+      kind: "Filter",
       params: [
-        { name: "filterType", type: "String", value: "HighPass" },
-        { name: "frequencyHz", type: "Number", value: 120 },
-        { name: "q", type: "Number", value: 0.9 },
+        { name: "filterType", kind: "String", value: "HighPass" },
+        { name: "frequencyHz", kind: "Number", value: 120 },
+        { name: "q", kind: "Number", value: 0.9 },
       ],
     };
 
@@ -107,11 +107,11 @@ describe("createRuntimeEffect", () => {
     const context = createFakeContext();
     const effect: Effect = {
       index: 0,
-      type: "Delay",
+      kind: "Delay",
       params: [
-        { name: "delaySeconds", type: "Number", value: 0.35 },
-        { name: "feedback", type: "Number", value: 0.45 },
-        { name: "mix", type: "Number", value: 0.4 },
+        { name: "delaySeconds", kind: "Number", value: 0.35 },
+        { name: "feedback", kind: "Number", value: 0.45 },
+        { name: "mix", kind: "Number", value: 0.4 },
       ],
     };
 
@@ -127,10 +127,10 @@ describe("createRuntimeEffect", () => {
     const impulseBuffer = {} as AudioBuffer;
     const effect: Effect = {
       index: 1,
-      type: "Reverb",
+      kind: "Reverb",
       params: [
-        { name: "impulseId", type: "String", value: "small-hall" },
-        { name: "mix", type: "Number", value: 0.2 },
+        { name: "impulseId", kind: "String", value: "small-hall" },
+        { name: "mix", kind: "Number", value: 0.2 },
       ],
     };
 
@@ -148,8 +148,8 @@ describe("createRuntimeEffect", () => {
     const context = createFakeContext();
     const effect: Effect = {
       index: 1,
-      type: "Reverb",
-      params: [{ name: "impulseId", type: "String", value: "missing-room" }],
+      kind: "Reverb",
+      params: [{ name: "impulseId", kind: "String", value: "missing-room" }],
     };
 
     const result = createRuntimeEffect({ context, effect, impulseResponses: new Map() });
@@ -160,12 +160,12 @@ describe("createRuntimeEffect", () => {
 
   it("returns an offline-only error for non-realtime effects", () => {
     const context = createFakeContext();
-    const offlineTypes: Effect["type"][] = ["Normalize", "PitchShift", "TimeStretch", "NoiseReduction"];
+    const offlineKinds: Effect["kind"][] = ["Normalize", "PitchShift", "TimeStretch", "NoiseReduction"];
 
-    for (const type of offlineTypes) {
+    for (const kind of offlineKinds) {
       const effect: Effect = {
         index: 3,
-        type,
+        kind,
         params: [],
       };
 

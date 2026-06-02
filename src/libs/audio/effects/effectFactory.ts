@@ -1,6 +1,6 @@
 import { err, ok } from "neverthrow";
 import type { Result } from "neverthrow";
-import type { Effect } from "../../../types/audio";
+import type { Effect } from "../../../types/multitrack";
 import type { OpenAuditionError } from "../../../types/error";
 import type { AudioEffect } from "../core";
 import { createDelayEffect } from "./delayEffect";
@@ -18,9 +18,9 @@ interface CreateRuntimeEffectOptions {
 
 export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result<AudioEffect, OpenAuditionError> {
   const { context, effect, impulseResponses } = options;
-  const id = `effect-${effect.index}-${effect.type.toLowerCase()}`;
+  const id = `effect-${effect.index}-${effect.kind.toLowerCase()}`;
 
-  if (effect.type === "Gain") {
+  if (effect.kind === "Gain") {
     return ok(
       createGainEffect({
         context,
@@ -30,7 +30,7 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
     );
   }
 
-  if (effect.type === "Eq") {
+  if (effect.kind === "Eq") {
     return ok(
       createEqEffect({
         context,
@@ -46,7 +46,7 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
     );
   }
 
-  if (effect.type === "Filter") {
+  if (effect.kind === "Filter") {
     return ok(
       createFilterEffect({
         context,
@@ -59,7 +59,7 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
     );
   }
 
-  if (effect.type === "Delay") {
+  if (effect.kind === "Delay") {
     return ok(
       createDelayEffect({
         context,
@@ -71,7 +71,7 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
     );
   }
 
-  if (effect.type === "Reverb") {
+  if (effect.kind === "Reverb") {
     const impulseId = getStringParam(effect.params, "impulseId", "default");
     const impulseBuffer = impulseResponses.get(impulseId);
 
@@ -94,21 +94,21 @@ export function createRuntimeEffect(options: CreateRuntimeEffectOptions): Result
   }
 
   if (
-    effect.type === "Normalize" ||
-    effect.type === "PitchShift" ||
-    effect.type === "TimeStretch" ||
-    effect.type === "NoiseReduction"
+    effect.kind === "Normalize" ||
+    effect.kind === "PitchShift" ||
+    effect.kind === "TimeStretch" ||
+    effect.kind === "NoiseReduction"
   ) {
     return err({
       type: "AudioEffectOfflineOnly",
-      message: `Effect is only available in offline processing: ${effect.type}`,
+      message: `Effect is only available in offline processing: ${effect.kind}`,
       data: { effect },
     });
   }
 
   return err({
     type: "AudioEffectUnsupported",
-    message: `Realtime effect is not supported: ${effect.type}`,
+    message: `Realtime effect is not supported: ${effect.kind}`,
     data: { effect },
   });
 }

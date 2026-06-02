@@ -25,7 +25,7 @@ export const effectParamSchema = z
 
       return {
         name: param["@_name"],
-        type: param["@_type"],
+        kind: param["@_type"],
         value: parsedValue.data,
       };
     }
@@ -46,14 +46,14 @@ export const effectParamSchema = z
 
       return {
         name: param["@_name"],
-        type: param["@_type"],
+        kind: param["@_type"],
         value: parsedValue.data,
       };
     }
 
     return {
       name: param["@_name"],
-      type: param["@_type"],
+      kind: param["@_type"],
       value: param["#text"],
     };
   });
@@ -66,7 +66,7 @@ export const effectSchema = z
   })
   .transform((effect) => ({
     index: effect["@_index"],
-    type: effect["@_type"],
+    kind: effect["@_type"],
     params: effect.param,
   }));
 

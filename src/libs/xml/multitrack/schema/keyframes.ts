@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { keyframeCurveSchema, keyframeTargetSchema } from "./enums";
+import { keyframeTargetSchema } from "./enums";
 import {
   arrayOf,
   decimalStringSchema,
@@ -10,12 +10,11 @@ export const keyframePointSchema = z
   .object({
     "@_time": nonNegativeNumberSchema,
     "@_value": decimalStringSchema,
-    "@_curve": keyframeCurveSchema,
+    "@_curve": z.literal("linear"),
   })
   .transform((point) => ({
     time: point["@_time"],
     value: point["@_value"],
-    curve: point["@_curve"],
   }));
 
 export const keyframeSchema = z

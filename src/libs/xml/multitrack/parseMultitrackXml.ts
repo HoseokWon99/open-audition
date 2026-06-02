@@ -1,5 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { Multitrack } from "../../../types/audio";
+import type { Multitrack } from "../../../types/multitrack";
 import { OpenAuditionError } from "../../../types/error.ts";
 import { parseXml, ValidateSchema } from "../core";
 import { multitrackSchema } from "./schema";

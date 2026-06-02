@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { trackHeightSchema } from "./enums";
 import { effectsContainerSchema } from "./effects";
 import { fadeSchema } from "./fades";
 import { keyframesContainerSchema } from "./keyframes";
@@ -35,7 +34,7 @@ export const clipSchema = z
   .transform((clip) => ({
     id: clip["@_id"],
     assetId: clip["@_assetId"],
-    name: clip["@_name"],
+    name: clip["@_name"] ?? null,
     locked: clip["@_locked"],
     muted: clip["@_muted"],
     timelineStart: clip["@_timelineStart"],
@@ -44,8 +43,8 @@ export const clipSchema = z
     gainDb: clip["@_gainDb"],
     pan: clip["@_pan"],
     playbackRate: clip["@_playbackRate"],
-    fadeIn: clip.fadeIn,
-    fadeOut: clip.fadeOut,
+    fadeIn: clip.fadeIn ?? null,
+    fadeOut: clip.fadeOut ?? null,
     keyframes: clip.keyframes,
     effects: clip.effects,
   }));
@@ -64,7 +63,7 @@ export const trackSchema = z
     "@_index": integerStringSchema,
     "@_name": z.string().min(1),
     "@_color": optionalStringSchema,
-    "@_height": trackHeightSchema.optional(),
+    "@_height": positiveNumberSchema.optional(),
     "@_locked": booleanStringSchema,
     "@_muted": booleanStringSchema,
     "@_solo": booleanStringSchema,
@@ -76,8 +75,8 @@ export const trackSchema = z
   .transform((track) => ({
     index: track["@_index"],
     name: track["@_name"],
-    color: track["@_color"],
-    height: track["@_height"],
+    color: track["@_color"] ?? null,
+    height: track["@_height"] ?? null,
     locked: track["@_locked"],
     muted: track["@_muted"],
     solo: track["@_solo"],
