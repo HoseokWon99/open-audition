@@ -4,14 +4,13 @@ import { TimelineRuler } from "./TimelineRuler";
 import { TrackHeader } from "./TrackHeader";
 import { ResizableHandle } from "./ResizableHandle";
 import { ClipWaveformPreview } from "./ClipWaveformPreview";
-import type { MediaFile, TimelineClip, TimelineTrack } from "../../types/audio";
+import type {
+  MediaFile,
+  TimelineClip,
+  TimelineKeyframePoint,
+  TimelineTrack,
+} from "../../types/audio";
 import { clamp } from "../../utils/math";
-
-interface ClipLevelKeyframe {
-  id: string;
-  xPercent: number;
-  yPercent: number;
-}
 
 interface ClipLevelMenu {
   clipId: string;
@@ -33,6 +32,16 @@ interface MultitrackTimelineProps {
   zoomLevel: number;
   getClipFile: (clip: TimelineClip) => MediaFile | undefined;
   onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
+  onDeleteClipGainKeyframes: (clipId: string, keyframeIds: string[]) => void;
+  onMoveClipGainKeyframes: (clipId: string, deltaYPercent: number) => void;
+  onResetClipGainKeyframes: (clipId: string, keyframeIds: string[]) => void;
+  onUpdateClipGainKeyframe: (
+    clipId: string,
+    keyframeId: string,
+    xPercent: number,
+    yPercent: number,
+  ) => void;
+  onUpsertClipGainKeyframe: (clipId: string, xPercent: number, yPercent: number) => void;
   onChangeTrackGain: (trackId: string, gainDb: number) => void;
   onChangeTrackPan: (trackId: string, pan: number) => void;
   onChangePlayhead: (percent: number) => void;
@@ -58,6 +67,11 @@ export function MultitrackTimeline({
   zoomLevel,
   getClipFile,
   onChangeClipTiming,
+  onDeleteClipGainKeyframes,
+  onMoveClipGainKeyframes,
+  onResetClipGainKeyframes,
+  onUpdateClipGainKeyframe,
+  onUpsertClipGainKeyframe,
   onChangeTrackGain,
   onChangeTrackPan,
   onChangePlayhead,
@@ -71,9 +85,6 @@ export function MultitrackTimeline({
   const lanesRef = useRef<HTMLDivElement>(null);
   const laneContentRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
-  const [clipLevelKeyframes, setClipLevelKeyframes] = useState<Record<string, ClipLevelKeyframe[]>>(
-    {},
-  );
   const [selectedClipLevelKeyframes, setSelectedClipLevelKeyframes] = useState<
     Record<string, string[]>
   >({});
@@ -173,25 +184,8 @@ export function MultitrackTimeline({
     const xPercent = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
     const yPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
 
-    upsertClipLevelKeyframe(clip.id, xPercent, yPercent);
+    onUpsertClipGainKeyframe(clip.id, xPercent, yPercent);
     setClipLevelMenu(null);
-  }
-
-  function upsertClipLevelKeyframe(clipId: string, xPercent: number, yPercent: number) {
-    const keyframeId = `${clipId}-${Math.round(xPercent * 100)}-${Math.round(yPercent * 100)}`;
-
-    setClipLevelKeyframes((currentKeyframes) => {
-      const existingKeyframes = currentKeyframes[clipId] ?? defaultClipLevelKeyframes();
-      const nextKeyframes = existingKeyframes
-        .filter((keyframe) => Math.abs(keyframe.xPercent - xPercent) > 1.25)
-        .concat({ id: keyframeId, xPercent, yPercent })
-        .sort((left, right) => left.xPercent - right.xPercent);
-
-      return {
-        ...currentKeyframes,
-        [clipId]: nextKeyframes,
-      };
-    });
   }
 
   function startClipLevelLineDrag(event: React.MouseEvent<SVGPolylineElement>, clip: TimelineClip) {
@@ -208,19 +202,12 @@ export function MultitrackTimeline({
 
     const rect = svg.getBoundingClientRect();
     const initialYPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
-    const initialKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
 
     function handleMove(moveEvent: MouseEvent) {
       const nextYPercent = clamp(((moveEvent.clientY - rect.top) / rect.height) * 100, 0, 100);
       const deltaYPercent = nextYPercent - initialYPercent;
 
-      setClipLevelKeyframes((currentKeyframes) => ({
-        ...currentKeyframes,
-        [clip.id]: initialKeyframes.map((keyframe) => ({
-          ...keyframe,
-          yPercent: clamp(keyframe.yPercent + deltaYPercent, 0, 100),
-        })),
-      }));
+      onMoveClipGainKeyframes(clip.id, deltaYPercent);
     }
 
     function stopDrag() {
@@ -235,7 +222,7 @@ export function MultitrackTimeline({
   function startClipLevelKeyframeDrag(
     event: React.MouseEvent<SVGRectElement>,
     clip: TimelineClip,
-    keyframe: ClipLevelKeyframe,
+    keyframe: TimelineKeyframePoint,
   ) {
     if (event.button !== 0) {
       return;
@@ -255,7 +242,8 @@ export function MultitrackTimeline({
     const rect = svg.getBoundingClientRect();
     const initialXPercent = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
     const initialYPercent = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
-    const initialKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+    const initialXKeyframePercent = keyframe.xPercent;
+    const initialYKeyframePercent = keyframe.yPercent;
 
     function handleMove(moveEvent: MouseEvent) {
       const nextXPercent = clamp(((moveEvent.clientX - rect.left) / rect.width) * 100, 0, 100);
@@ -263,20 +251,12 @@ export function MultitrackTimeline({
       const deltaXPercent = nextXPercent - initialXPercent;
       const deltaYPercent = nextYPercent - initialYPercent;
 
-      setClipLevelKeyframes((currentKeyframes) => ({
-        ...currentKeyframes,
-        [clip.id]: initialKeyframes
-          .map((candidate) =>
-            candidate.id === keyframe.id
-              ? {
-                  ...candidate,
-                  xPercent: clamp(candidate.xPercent + deltaXPercent, 0, 100),
-                  yPercent: clamp(candidate.yPercent + deltaYPercent, 0, 100),
-                }
-              : candidate,
-          )
-          .sort((left, right) => left.xPercent - right.xPercent),
-      }));
+      onUpdateClipGainKeyframe(
+        clip.id,
+        keyframe.id,
+        initialXKeyframePercent + deltaXPercent,
+        initialYKeyframePercent + deltaYPercent,
+      );
     }
 
     function stopDrag() {
@@ -315,7 +295,7 @@ export function MultitrackTimeline({
   function toggleClipLevelMenu(
     event: React.MouseEvent<SVGRectElement>,
     clip: TimelineClip,
-    keyframe: ClipLevelKeyframe,
+    keyframe: TimelineKeyframePoint,
   ) {
     event.preventDefault();
     event.stopPropagation();
@@ -340,12 +320,7 @@ export function MultitrackTimeline({
       return;
     }
 
-    setClipLevelKeyframes((currentKeyframes) => ({
-      ...currentKeyframes,
-      [clipId]: (currentKeyframes[clipId] ?? defaultClipLevelKeyframes()).filter(
-        (keyframe) => !selectedKeyframeIds.includes(keyframe.id),
-      ),
-    }));
+    onDeleteClipGainKeyframes(clipId, selectedKeyframeIds);
     setSelectedClipLevelKeyframes((currentSelection) => ({
       ...currentSelection,
       [clipId]: [],
@@ -360,12 +335,7 @@ export function MultitrackTimeline({
       return;
     }
 
-    setClipLevelKeyframes((currentKeyframes) => ({
-      ...currentKeyframes,
-      [clipId]: (currentKeyframes[clipId] ?? defaultClipLevelKeyframes()).map((keyframe) =>
-        selectedKeyframeIds.includes(keyframe.id) ? { ...keyframe, yPercent: 50 } : keyframe,
-      ),
-    }));
+    onResetClipGainKeyframes(clipId, selectedKeyframeIds);
     setClipLevelMenu(null);
   }
 
@@ -585,7 +555,7 @@ export function MultitrackTimeline({
                     onClick={() => onSelectTrack(track.id)}
                   >
                     {trackClips.map((clip) => {
-                      const levelKeyframes = clipLevelKeyframes[clip.id] ?? defaultClipLevelKeyframes();
+                      const levelKeyframes = clip.automation?.gain ?? defaultClipLevelKeyframes();
                       const selectedKeyframeIds = selectedClipLevelKeyframes[clip.id] ?? [];
 
                       return (
@@ -724,7 +694,7 @@ export function MultitrackTimeline({
   );
 }
 
-function defaultClipLevelKeyframes(): ClipLevelKeyframe[] {
+function defaultClipLevelKeyframes(): TimelineKeyframePoint[] {
   return [
     { id: "start", xPercent: 0, yPercent: 50 },
     { id: "end", xPercent: 100, yPercent: 50 },

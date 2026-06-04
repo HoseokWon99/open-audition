@@ -1196,11 +1196,6 @@ button {
   font-size: 14px;
 }
 
-.oa-transport button {
-  display: grid;
-  place-items: center;
-}
-
 .oa-transport .oa-record {
   color: #e65a5a;
 }

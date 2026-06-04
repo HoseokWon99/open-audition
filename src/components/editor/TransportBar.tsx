@@ -23,14 +23,23 @@ export function TransportBar({
   onSeekStart,
   onStop,
 }: TransportBarProps) {
+  const playbackControl =
+    state === "Playing"
+      ? { key: "playback", label: "Pause", icon: "pause", onClick: onPause, pressed: true }
+      : {
+          key: "playback",
+          label: "Play",
+          icon: "play",
+          onClick: onPlay,
+          pressed: state === "Paused",
+        };
   const controls = [
-    { label: "Stop", icon: "stop", onClick: onStop, pressed: state === "Stopped" },
-    { label: "Play", icon: "play", onClick: onPlay, pressed: state === "Playing" },
-    { label: "Pause", icon: "pause", onClick: onPause, pressed: state === "Paused" },
-    { label: "Go to start", icon: "skip-start", onClick: onSeekStart, pressed: false },
-    { label: "Rewind", icon: "rewind", onClick: onRewind, pressed: false },
-    { label: "Fast forward", icon: "fast-forward", onClick: onFastForward, pressed: false },
-    { label: "Go to end", icon: "skip-end", onClick: onSeekEnd, pressed: false },
+    { key: "stop", label: "Stop", icon: "stop", onClick: onStop, pressed: state === "Stopped" },
+    playbackControl,
+    { key: "skip-start", label: "Go to start", icon: "skip-start", onClick: onSeekStart, pressed: false },
+    { key: "rewind", label: "Rewind", icon: "rewind", onClick: onRewind, pressed: false },
+    { key: "fast-forward", label: "Fast forward", icon: "fast-forward", onClick: onFastForward, pressed: false },
+    { key: "skip-end", label: "Go to end", icon: "skip-end", onClick: onSeekEnd, pressed: false },
   ];
 
   return (
@@ -41,7 +50,7 @@ export function TransportBar({
           <button
             aria-label={control.label}
             aria-pressed={control.pressed}
-            key={control.icon}
+            key={control.key}
             onClick={control.onClick}
             type="button"
           >

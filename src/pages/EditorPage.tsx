@@ -8,80 +8,80 @@ import { TransportBar } from "../components/editor/TransportBar";
 import { WaveformCanvas } from "../components/editor/WaveformCanvas";
 import type { WaveSurferController } from "../hooks/useWaveSurfer";
 import type { AudioTransportEngine, TransportState } from "../libs/audio/engine";
-import type { MediaFile, MediaTab, TimelineClip, TimelineTrack } from "../types/audio";
-import type { ProjectSummary } from "../types/project";
+import { useAppStore } from "../store/appStore";
+import { useEditorStore } from "../store/editorStore";
+import {
+  useClipFileGetter,
+  useSelectedFile,
+  useSelectedProject,
+  useTimelinePlayheadPercent,
+  useTimelineViewport,
+} from "../store/selectors";
+import { useSessionStore } from "../store/sessionStore";
+import { useTransportStore } from "../store/transportStore";
 import { clamp } from "../utils/math";
 import { formatTransportTime } from "../utils/time";
 
 interface EditorPageProps {
-  activeMediaTab: MediaTab;
-  clips: TimelineClip[];
   editorView: "Multitrack" | "Waveform";
-  files: MediaFile[];
-  project: ProjectSummary;
-  selectedClipId: string;
-  selectedFileId: string;
-  selectedTrackId: string;
-  tracks: TimelineTrack[];
   audioEngine: AudioTransportEngine;
-  onChangeClipTiming: (clipId: string, startPercent: number, widthPercent: number) => void;
-  onChangeTrackGain: (trackId: string, gainDb: number) => void;
-  onChangeTrackPan: (trackId: string, pan: number) => void;
-  onGoHome: () => void;
-  onOpenClip: (clipId: string) => void;
-  onOpenFile: (fileId: string) => void;
-  onOpenSettings: () => void;
-  onSelectClip: (clipId: string) => void;
-  onSelectFile: (fileId: string) => void;
-  onSelectTrack: (trackId: string) => void;
-  onTabChange: (tab: MediaTab) => void;
 }
 
-export function EditorPage({
-  activeMediaTab,
-  clips,
-  editorView,
-  files,
-  project,
-  selectedClipId,
-  selectedFileId,
-  selectedTrackId,
-  tracks,
-  audioEngine,
-  onChangeClipTiming,
-  onChangeTrackGain,
-  onChangeTrackPan,
-  onGoHome,
-  onOpenClip,
-  onOpenFile,
-  onOpenSettings,
-  onSelectClip,
-  onSelectFile,
-  onSelectTrack,
-  onTabChange,
-}: EditorPageProps) {
-  const [leftDockWidth, setLeftDockWidth] = useState(318);
-  const [inspectorHeight, setInspectorHeight] = useState(172);
-  const [playheadSeconds, setPlayheadSeconds] = useState(73.091);
-  const [trackHeadWidth, setTrackHeadWidth] = useState(318);
-  const [trackHeights, setTrackHeights] = useState<Record<string, number>>(() =>
-    Object.fromEntries(tracks.map((track) => [track.id, 1])),
-  );
-  const [transportHeight, setTransportHeight] = useState(48);
-  const [transportState, setTransportState] = useState<TransportState>(audioEngine.state);
-  const [visibleStartPercent, setVisibleStartPercent] = useState(0);
-  const [visibleWidthPercent, setVisibleWidthPercent] = useState(100);
+export function EditorPage({ editorView, audioEngine }: EditorPageProps) {
   const [waveformController, setWaveformController] = useState<WaveSurferController | null>(null);
-  const [waveformDurationSeconds, setWaveformDurationSeconds] = useState(70);
-  const [waveformPlayheadSeconds, setWaveformPlayheadSeconds] = useState(0);
-  const timelineDurationSeconds = 140;
-  const timelineWidthPercent = (100 / visibleWidthPercent) * 100;
-  const zoomLevel = clamp(Math.round((100 - visibleWidthPercent) / 15), 0, 5);
-  const selectedFile = files.find((file) => file.id === selectedFileId);
+  const activeMediaTab = useEditorStore((state) => state.activeMediaTab);
+  const leftDockWidth = useEditorStore((state) => state.leftDockWidth);
+  const inspectorHeight = useEditorStore((state) => state.inspectorHeight);
+  const resizeInspector = useEditorStore((state) => state.resizeInspector);
+  const resizeLeftDock = useEditorStore((state) => state.resizeLeftDock);
+  const resizeTrackHead = useEditorStore((state) => state.resizeTrackHead);
+  const resizeTrackPair = useEditorStore((state) => state.resizeTrackPair);
+  const resizeTransport = useEditorStore((state) => state.resizeTransport);
+  const selectClip = useEditorStore((state) => state.selectClip);
+  const selectFile = useEditorStore((state) => state.selectFile);
+  const selectTrack = useEditorStore((state) => state.selectTrack);
+  const selectedClipId = useEditorStore((state) => state.selectedClipId);
+  const selectedFileId = useEditorStore((state) => state.selectedFileId);
+  const selectedTrackId = useEditorStore((state) => state.selectedTrackId);
+  const setMediaTab = useEditorStore((state) => state.setMediaTab);
+  const setVisibleWindow = useEditorStore((state) => state.setVisibleWindow);
+  const trackHeadWidth = useEditorStore((state) => state.trackHeadWidth);
+  const trackHeights = useEditorStore((state) => state.trackHeights);
+  const transportHeight = useEditorStore((state) => state.transportHeight);
+  const changeClipTiming = useSessionStore((state) => state.changeClipTiming);
+  const changeTrackGain = useSessionStore((state) => state.changeTrackGain);
+  const changeTrackPan = useSessionStore((state) => state.changeTrackPan);
+  const clips = useSessionStore((state) => state.clips);
+  const deleteClipGainKeyframes = useSessionStore((state) => state.deleteClipGainKeyframes);
+  const files = useSessionStore((state) => state.files);
+  const moveClipGainKeyframes = useSessionStore((state) => state.moveClipGainKeyframes);
+  const resetClipGainKeyframes = useSessionStore((state) => state.resetClipGainKeyframes);
+  const tracks = useSessionStore((state) => state.tracks);
+  const updateClipGainKeyframe = useSessionStore((state) => state.updateClipGainKeyframe);
+  const upsertClipGainKeyframe = useSessionStore((state) => state.upsertClipGainKeyframe);
+  const navigate = useAppStore((state) => state.navigate);
+  const openSettings = useAppStore((state) => state.openSettings);
+  const timelineDurationSeconds = useTransportStore((state) => state.timelineDurationSeconds);
+  const timelinePlayheadSeconds = useTransportStore((state) => state.timelinePlayheadSeconds);
+  const setTimelinePlayhead = useTransportStore((state) => state.setTimelinePlayhead);
+  const setTransportState = useTransportStore((state) => state.setTransportState);
+  const setWaveformDuration = useTransportStore((state) => state.setWaveformDuration);
+  const setWaveformPlayhead = useTransportStore((state) => state.setWaveformPlayhead);
+  const stopTimeline = useTransportStore((state) => state.stopTimeline);
+  const stopWaveform = useTransportStore((state) => state.stopWaveform);
+  const transportState = useTransportStore((state) => state.transportState);
+  const waveformDurationSeconds = useTransportStore((state) => state.waveformDurationSeconds);
+  const waveformPlayheadSeconds = useTransportStore((state) => state.waveformPlayheadSeconds);
+  const getClipFile = useClipFileGetter();
+  const project = useSelectedProject();
+  const selectedFile = useSelectedFile();
+  const playheadPercent = useTimelinePlayheadPercent();
+  const { timelineWidthPercent, visibleStartPercent, visibleWidthPercent, zoomLevel } =
+    useTimelineViewport();
   const activeDurationSeconds =
     editorView === "Waveform" ? waveformDurationSeconds : timelineDurationSeconds;
   const activePlayheadSeconds =
-    editorView === "Waveform" ? waveformPlayheadSeconds : playheadSeconds;
+    editorView === "Waveform" ? waveformPlayheadSeconds : timelinePlayheadSeconds;
   const activeTransportState: TransportState =
     editorView === "Waveform"
       ? waveformController?.isPlaying
@@ -101,10 +101,11 @@ export function EditorPage({
   const setTransportPosition = useCallback(
     (seconds: number) => {
       const nextSeconds = clamp(seconds, 0, timelineDurationSeconds);
+
       audioEngine.seek(nextSeconds);
-      setPlayheadSeconds(nextSeconds);
+      setTimelinePlayhead(nextSeconds);
     },
-    [audioEngine],
+    [audioEngine, setTimelinePlayhead, timelineDurationSeconds],
   );
 
   const reportAudioError = useCallback((message: string) => {
@@ -114,10 +115,42 @@ export function EditorPage({
   const setWaveformPosition = useCallback(
     (seconds: number) => {
       const nextSeconds = clamp(seconds, 0, waveformDurationSeconds);
+
       waveformController?.seek(nextSeconds);
-      setWaveformPlayheadSeconds(nextSeconds);
+      setWaveformPlayhead(nextSeconds);
     },
-    [waveformController, waveformDurationSeconds],
+    [setWaveformPlayhead, waveformController, waveformDurationSeconds],
+  );
+
+  const openFile = useCallback(
+    (fileId: string) => {
+      const file = files.find((candidate) => candidate.id === fileId);
+
+      selectFile(fileId);
+
+      if (file?.mediaType === "Multitrack") {
+        navigate("Multitrack");
+        return;
+      }
+
+      navigate("Waveform");
+    },
+    [files, navigate, selectFile],
+  );
+
+  const openClip = useCallback(
+    (clipId: string) => {
+      const clip = clips.find((candidate) => candidate.id === clipId);
+
+      selectClip(clipId);
+
+      if (clip) {
+        selectFile(clip.sourceFileId);
+      }
+
+      navigate("Waveform");
+    },
+    [clips, navigate, selectClip, selectFile],
   );
 
   const play = useCallback(() => {
@@ -126,7 +159,7 @@ export function EditorPage({
       return;
     }
 
-    void audioEngine.play(playheadSeconds).then((result) => {
+    void audioEngine.play(timelinePlayheadSeconds).then((result) => {
       if (result.isErr()) {
         reportAudioError(result.error.message);
         return;
@@ -134,7 +167,14 @@ export function EditorPage({
 
       setTransportState(audioEngine.state);
     });
-  }, [audioEngine, editorView, playheadSeconds, reportAudioError, waveformController]);
+  }, [
+    audioEngine,
+    editorView,
+    reportAudioError,
+    setTransportState,
+    timelinePlayheadSeconds,
+    waveformController,
+  ]);
 
   const pause = useCallback(() => {
     if (editorView === "Waveform") {
@@ -148,15 +188,23 @@ export function EditorPage({
         return;
       }
 
-      setPlayheadSeconds(clamp(audioEngine.currentTime(), 0, timelineDurationSeconds));
+      setTimelinePlayhead(clamp(audioEngine.currentTime(), 0, timelineDurationSeconds));
       setTransportState(audioEngine.state);
     });
-  }, [audioEngine, editorView, reportAudioError, waveformController]);
+  }, [
+    audioEngine,
+    editorView,
+    reportAudioError,
+    setTimelinePlayhead,
+    setTransportState,
+    timelineDurationSeconds,
+    waveformController,
+  ]);
 
   const stop = useCallback(() => {
     if (editorView === "Waveform") {
       waveformController?.stop();
-      setWaveformPlayheadSeconds(0);
+      stopWaveform();
       return;
     }
 
@@ -166,10 +214,9 @@ export function EditorPage({
         return;
       }
 
-      setPlayheadSeconds(0);
-      setTransportState(audioEngine.state);
+      stopTimeline();
     });
-  }, [audioEngine, editorView, reportAudioError, waveformController]);
+  }, [audioEngine, editorView, reportAudioError, stopTimeline, stopWaveform, waveformController]);
 
   useEffect(() => {
     if (transportState !== "Playing") {
@@ -180,7 +227,8 @@ export function EditorPage({
 
     function syncPlayhead() {
       const currentTime = clamp(audioEngine.currentTime(), 0, timelineDurationSeconds);
-      setPlayheadSeconds(currentTime);
+
+      setTimelinePlayhead(currentTime);
 
       if (currentTime >= timelineDurationSeconds) {
         void audioEngine.stop().then((result) => {
@@ -189,8 +237,7 @@ export function EditorPage({
             return;
           }
 
-          setPlayheadSeconds(0);
-          setTransportState(audioEngine.state);
+          stopTimeline();
         });
         return;
       }
@@ -201,85 +248,71 @@ export function EditorPage({
     animationFrame = window.requestAnimationFrame(syncPlayhead);
 
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [audioEngine, reportAudioError, transportState]);
+  }, [
+    audioEngine,
+    reportAudioError,
+    setTimelinePlayhead,
+    stopTimeline,
+    timelineDurationSeconds,
+    transportState,
+  ]);
 
   useEffect(() => {
-    setWaveformDurationSeconds(selectedFile?.durationSeconds ?? 70);
-    setWaveformPlayheadSeconds(0);
-  }, [selectedFile]);
+    setWaveformDuration(selectedFile?.durationSeconds ?? 70);
+    setWaveformPlayhead(0);
+  }, [selectedFile, setWaveformDuration, setWaveformPlayhead]);
 
   return (
     <main className="oa-shell" style={layoutStyle}>
-      <TopBar onGoHome={onGoHome} onOpenSettings={onOpenSettings} title={project.name} />
+      <TopBar
+        onGoHome={() => navigate("Home")}
+        onOpenSettings={openSettings}
+        title={project.name}
+      />
       <div className="oa-workspace">
         <LeftDock
           activeTab={activeMediaTab}
           clips={clips}
           files={files}
-          onOpenFile={onOpenFile}
-          onResizeInspector={(delta) =>
-            setInspectorHeight((currentHeight) => clamp(currentHeight + delta, 112, 360))
-          }
-          onSelectFile={onSelectFile}
-          onTabChange={onTabChange}
-          selectedClipId={selectedClipId}
-          selectedFileId={selectedFileId}
+          onOpenFile={openFile}
+          onResizeInspector={resizeInspector}
+          onSelectFile={selectFile}
+          onTabChange={setMediaTab}
+          selectedClipId={selectedClipId ?? ""}
+          selectedFileId={selectedFileId ?? ""}
           tracks={tracks}
         />
         <ResizableHandle
           axis="X"
           label="Resize left dock and editor"
-          onResize={(delta) =>
-            setLeftDockWidth((currentWidth) => clamp(currentWidth + delta, 240, 520))
-          }
+          onResize={resizeLeftDock}
         />
         <section className="oa-main">
           {editorView === "Multitrack" ? (
             <MultitrackTimeline
               clips={clips}
               durationSeconds={timelineDurationSeconds}
-              getClipFile={(clip) => files.find((file) => file.id === clip.sourceFileId)}
+              getClipFile={getClipFile}
+              onChangeClipTiming={changeClipTiming}
               onChangePlayhead={(percent) =>
                 setTransportPosition((timelineDurationSeconds * clamp(percent, 0, 100)) / 100)
               }
-              onChangeClipTiming={onChangeClipTiming}
-              onChangeTrackGain={onChangeTrackGain}
-              onChangeTrackPan={onChangeTrackPan}
-              onOpenClip={onOpenClip}
-              onChangeVisibleWindow={(startPercent, widthPercent) => {
-                const nextWidthPercent = clamp(widthPercent, 10, 100);
-                const nextStartPercent = clamp(startPercent, 0, 100 - nextWidthPercent);
-
-                setVisibleWidthPercent(nextWidthPercent);
-                setVisibleStartPercent(nextStartPercent);
-              }}
-              onResizeTrack={(trackId, nextTrackId, delta) =>
-                setTrackHeights((currentHeights) => {
-                  const currentTrackHeight = currentHeights[trackId] ?? 1;
-                  const nextTrackHeight = currentHeights[nextTrackId] ?? 1;
-                  const totalPairHeight = currentTrackHeight + nextTrackHeight;
-                  const deltaRatio = delta / 120;
-                  const nextCurrentTrackHeight = clamp(
-                    currentTrackHeight + deltaRatio,
-                    0.55,
-                    totalPairHeight - 0.55,
-                  );
-
-                  return {
-                    ...currentHeights,
-                    [trackId]: nextCurrentTrackHeight,
-                    [nextTrackId]: totalPairHeight - nextCurrentTrackHeight,
-                  };
-                })
-              }
-              onResizeTrackHead={(delta) =>
-                setTrackHeadWidth((currentWidth) => clamp(currentWidth + delta, 250, 430))
-              }
-              onSelectClip={onSelectClip}
-              onSelectTrack={onSelectTrack}
-              playheadPercent={(playheadSeconds / timelineDurationSeconds) * 100}
-              selectedClipId={selectedClipId}
-              selectedTrackId={selectedTrackId}
+              onChangeTrackGain={changeTrackGain}
+              onChangeTrackPan={changeTrackPan}
+              onChangeVisibleWindow={setVisibleWindow}
+              onDeleteClipGainKeyframes={deleteClipGainKeyframes}
+              onMoveClipGainKeyframes={moveClipGainKeyframes}
+              onOpenClip={openClip}
+              onResetClipGainKeyframes={resetClipGainKeyframes}
+              onResizeTrack={resizeTrackPair}
+              onResizeTrackHead={resizeTrackHead}
+              onSelectClip={selectClip}
+              onSelectTrack={selectTrack}
+              onUpdateClipGainKeyframe={updateClipGainKeyframe}
+              onUpsertClipGainKeyframe={upsertClipGainKeyframe}
+              playheadPercent={playheadPercent}
+              selectedClipId={selectedClipId ?? ""}
+              selectedTrackId={selectedTrackId ?? ""}
               trackHeights={trackHeights}
               timelineWidthPercent={timelineWidthPercent}
               tracks={tracks}
@@ -291,32 +324,30 @@ export function EditorPage({
             <WaveformCanvas
               file={selectedFile}
               onControllerChange={setWaveformController}
-              onReady={setWaveformDurationSeconds}
-              onSeek={setWaveformPlayheadSeconds}
-              onTimeUpdate={setWaveformPlayheadSeconds}
+              onReady={setWaveformDuration}
+              onSeek={setWaveformPlayhead}
+              onTimeUpdate={setWaveformPlayhead}
               playheadSeconds={waveformPlayheadSeconds}
             />
           )}
           <ResizableHandle
             axis="Y"
             label="Resize editor and transport"
-            onResize={(delta) =>
-              setTransportHeight((currentHeight) => clamp(currentHeight - delta, 42, 90))
-            }
+            onResize={resizeTransport}
           />
           <TransportBar
             currentTime={formatTransportTime(activePlayheadSeconds)}
             onFastForward={() =>
               editorView === "Waveform"
                 ? setWaveformPosition(waveformPlayheadSeconds + 5)
-                : setTransportPosition(playheadSeconds + 5)
+                : setTransportPosition(timelinePlayheadSeconds + 5)
             }
             onPause={pause}
             onPlay={play}
             onRewind={() =>
               editorView === "Waveform"
                 ? setWaveformPosition(waveformPlayheadSeconds - 5)
-                : setTransportPosition(playheadSeconds - 5)
+                : setTransportPosition(timelinePlayheadSeconds - 5)
             }
             onSeekEnd={() =>
               editorView === "Waveform"

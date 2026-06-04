@@ -27,6 +27,17 @@ export interface TimelineClip {
   fadeIn: string;
   fadeOut: string;
   duration: string;
+  automation?: TimelineClipAutomation;
+}
+
+export interface TimelineClipAutomation {
+  gain: TimelineKeyframePoint[];
+}
+
+export interface TimelineKeyframePoint {
+  id: string;
+  xPercent: number;
+  yPercent: number;
 }
 
 export interface TimelineTrack {
