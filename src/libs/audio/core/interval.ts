@@ -28,7 +28,6 @@ export class Interval {
   intersection(other: Interval): Interval {
     const start = Math.max(this.start, other.start);
     const end = Math.max(start, Math.min(this.end, other.end));
-
     return new Interval(start, end);
   }
 }
