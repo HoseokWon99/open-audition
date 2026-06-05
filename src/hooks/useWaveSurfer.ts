@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
 import WaveSurfer from "wavesurfer.js";
 import type { WaveSurferOptions } from "wavesurfer.js";
-import { resolveAudioSourceUrl } from "../libs/audio/waveform/audioSource";
-import type { MediaFile } from "../types/audio";
+import { audioSourceDurationSeconds, resolveAudioSourceUrl } from "../libs/audio/waveform";
+import type { AudioSource } from "../libs/audio/waveform";
 import { clamp } from "../utils/math";
 
 export type WaveSurferStatus = "Idle" | "Loading" | "Ready" | "Error";
@@ -36,14 +36,14 @@ const fallbackWaveformPeaks = [
 ];
 
 export function useWaveSurfer(
-  file: MediaFile | undefined,
+  file: AudioSource,
   options: UseWaveSurferOptions = {},
 ): WaveSurferController {
   const containerRef = useRef<HTMLDivElement>(null);
   const waveSurferRef = useRef<WaveSurfer | null>(null);
   const optionsRef = useRef(options);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
-  const [durationSeconds, setDurationSeconds] = useState(file?.durationSeconds ?? 0);
+  const [durationSeconds, setDurationSeconds] = useState(audioSourceDurationSeconds(file) ?? 0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [status, setStatus] = useState<WaveSurferStatus>("Idle");
@@ -59,7 +59,7 @@ export function useWaveSurfer(
 
     let isCurrent = true;
     const audioSourceUrl = resolveAudioSourceUrl(file);
-    const fallbackDurationSeconds = file?.durationSeconds ?? 70;
+    const fallbackDurationSeconds = audioSourceDurationSeconds(file) ?? 70;
     const waveSurfer = WaveSurfer.create({
       container,
       height: "auto",
@@ -81,7 +81,9 @@ export function useWaveSurfer(
 
     waveSurferRef.current = waveSurfer;
     setCurrentTimeSeconds(0);
-    setDurationSeconds(audioSourceUrl ? file?.durationSeconds ?? 0 : fallbackDurationSeconds);
+    setDurationSeconds(
+      audioSourceUrl ? audioSourceDurationSeconds(file) ?? 0 : fallbackDurationSeconds,
+    );
     setErrorMessage(null);
     setIsPlaying(false);
     setStatus(audioSourceUrl ? "Loading" : "Ready");
@@ -174,11 +176,15 @@ export function useWaveSurfer(
         return;
       }
 
-      const nextSeconds = clamp(seconds, 0, durationSeconds || file?.durationSeconds || 0);
+      const nextSeconds = clamp(
+        seconds,
+        0,
+        durationSeconds || audioSourceDurationSeconds(file) || 0,
+      );
       waveSurfer.setTime(nextSeconds);
       setCurrentTimeSeconds(nextSeconds);
     },
-    [durationSeconds, file?.durationSeconds],
+    [durationSeconds, file],
   );
 
   const stop = useCallback(() => {

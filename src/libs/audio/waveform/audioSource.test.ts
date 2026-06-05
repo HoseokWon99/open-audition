@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { resolveAudioSourceUrl } from "./audioSource";
+import { audioSourceDurationSeconds, resolveAudioSourceUrl } from "./audioSource";
 import type { MediaFile } from "../../../types/audio";
+import type { MediaAsset } from "../../../types/media";
 
 const audioFile: MediaFile = {
   id: "opening",
@@ -13,11 +14,45 @@ const audioFile: MediaFile = {
   filepath: "https://example.com/opening.mp3",
 };
 
+const mediaAsset: MediaAsset = {
+  id: "asset-opening",
+  originalPath: "/Users/test/opening.mp3",
+  cachePath: "/Users/test/Library/Application Support/open-audition/media/sources/asset-opening.mp3",
+  kind: "Audio",
+  fingerprint: {
+    sizeBytes: 1024,
+    modifiedUnixMs: 1_700_000_000_000,
+    contentHash: null,
+  },
+  metadata: {
+    durationSeconds: 70.171,
+    sampleRateHz: 48000,
+    channelCount: 2,
+    codec: "mp3",
+    container: "mp3",
+  },
+  derivedFrom: null,
+  revision: "1",
+};
+
 describe("resolveAudioSourceUrl", () => {
-  it("keeps browser-readable urls as-is", () => {
-    expect(resolveAudioSourceUrl(audioFile, (path) => `asset://${path}`)).toBe(
-      "https://example.com/opening.mp3",
+  it("converts rust media asset cache paths", () => {
+    expect(resolveAudioSourceUrl(mediaAsset, (path) => `asset://${path}`)).toBe(
+      "asset:///Users/test/Library/Application Support/open-audition/media/sources/asset-opening.mp3",
     );
+  });
+
+  it("ignores non-audio rust media assets", () => {
+    expect(resolveAudioSourceUrl({ ...mediaAsset, kind: "Video" })).toBeNull();
+  });
+
+  it("ignores browser-readable urls", () => {
+    expect(resolveAudioSourceUrl(audioFile, (path) => `asset://${path}`)).toBeNull();
+    expect(
+      resolveAudioSourceUrl({ ...audioFile, filepath: "http://example.com/opening.mp3" }),
+    ).toBeNull();
+    expect(resolveAudioSourceUrl({ ...audioFile, filepath: "blob:opening" })).toBeNull();
+    expect(resolveAudioSourceUrl({ ...audioFile, filepath: "data:audio/mp3;base64,abc" })).toBeNull();
   });
 
   it("converts local audio file paths", () => {
@@ -52,5 +87,15 @@ describe("resolveAudioSourceUrl", () => {
   it("ignores placeholder and non-audio files", () => {
     expect(resolveAudioSourceUrl({ ...audioFile, filepath: "/Users/.../opening.mp3" })).toBeNull();
     expect(resolveAudioSourceUrl({ ...audioFile, mediaType: "Multitrack" })).toBeNull();
+  });
+});
+
+describe("audioSourceDurationSeconds", () => {
+  it("reads rust media asset metadata duration", () => {
+    expect(audioSourceDurationSeconds(mediaAsset)).toBe(70.171);
+  });
+
+  it("reads legacy media file duration", () => {
+    expect(audioSourceDurationSeconds({ ...audioFile, durationSeconds: 70.171 })).toBe(70.171);
   });
 });

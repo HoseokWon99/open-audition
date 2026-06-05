@@ -4,6 +4,10 @@ import { useWaveformSelection } from "../../hooks/useWaveformSelection";
 import { useWaveformViewport } from "../../hooks/useWaveformViewport";
 import { useWaveSurfer } from "../../hooks/useWaveSurfer";
 import type { WaveSurferController } from "../../hooks/useWaveSurfer";
+import {
+  createWaveformPolygonPoints,
+  createWaveformSamples,
+} from "../../libs/audio/waveform";
 import type { MediaFile } from "../../types/audio";
 import { clamp } from "../../utils/math";
 
@@ -14,18 +18,17 @@ const bars = Array.from({ length: 180 }, (_, index) => {
   return clamp(rise * fall * variance, 0.08, 1);
 });
 
-const waveformSamples = Array.from({ length: 420 }, (_, index) => {
-  const progress = index / 419;
-  const attack = progress < 0.045 ? progress / 0.045 : 1;
-  const decay = progress > 0.62 ? Math.max(0.1, 1 - (progress - 0.62) / 0.38) : 1;
-  const phrase = 0.44 + Math.sin(index * 0.076) * 0.16 + Math.sin(index * 0.031) * 0.19;
-  const texture = Math.abs(Math.sin(index * 1.63) * Math.cos(index * 0.41)) * 0.3;
-  const transient = index % 53 === 0 || index % 89 === 0 ? 0.42 : 0;
-
-  return clamp((phrase + texture + transient) * attack * decay, 0.025, 0.94);
+const waveformSamples = createWaveformSamples({
+  count: 420,
+  attackPercent: 0.045,
+  decayStartPercent: 0.62,
+  floor: 0.025,
+  phraseFrequency: 0.076,
+  phraseSecondaryFrequency: 0.031,
+  transientEvery: [53, 89],
 });
 
-const waveformPolygonPoints = waveformPoints(waveformSamples);
+const waveformPolygonPoints = createWaveformPolygonPoints(waveformSamples);
 
 interface WaveformCanvasProps {
   file?: MediaFile;
@@ -340,23 +343,4 @@ export function WaveformCanvas({
       </div>
     </div>
   );
-}
-
-function waveformPoints(samples: number[]): string {
-  const upperPoints = samples.map((sample, index) => {
-    const x = (index / (samples.length - 1)) * 100;
-    const y = 50 - sample * 48;
-
-    return `${x.toFixed(2)},${y.toFixed(2)}`;
-  });
-  const lowerPoints = samples
-    .map((sample, index) => {
-      const x = (index / (samples.length - 1)) * 100;
-      const y = 50 + sample * 48;
-
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .reverse();
-
-  return [...upperPoints, ...lowerPoints].join(" ");
 }
