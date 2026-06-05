@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { AudioNodeManager } from "./audioNodeManager";
-import { createClipChain, createMasterChain, createTrackChain } from "./mixChains";
+import { AudioNodeManager } from "../core/audioNodeManager";
+import { createClipChain, createMasterChain, createTrackChain } from ".";
 
 function createFakeAudioNode(context: BaseAudioContext): AudioNode {
   return {
